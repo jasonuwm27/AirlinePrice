@@ -15,6 +15,7 @@ The app is designed to keep SerpAPI usage visible and controlled while still sea
 - Max-IATA multi-airport searches, capped at 4 origin and 4 destination airports per query
 - Smart, Expanded, and Full search coverage modes
 - Live SerpAPI credit estimate before search
+- Generated worldwide scheduled-service IATA airport dataset
 - Accordion result cards with outbound and return itinerary details
 - Deal scoring, price-vs-average labels, confidence, and prediction placeholders
 - Load-more pagination for result cards
@@ -75,7 +76,7 @@ FLIGHT_DETAILS_${departureString}_${arrivalString}_${outboundDate}_${returnDate}
 | State | React Context API |
 | Backend | Node.js, Express, TypeScript |
 | Flights | SerpAPI Google Flights engine |
-| Airports | Local IATA dataset |
+| Airports | Generated local IATA dataset from OurAirports |
 | Driving | OSRM / OpenStreetMap |
 
 ## Project Structure
@@ -98,6 +99,8 @@ FlightPrice/
       types/
         index.ts
   server/
+    scripts/
+      update-airports.mjs
     src/
       data/
         airports.json
@@ -185,6 +188,16 @@ npm run dev
 9. Hydrate return details for top grouped results.
 10. Return direct and alternative route cards to the frontend.
 
+## Airport Dataset
+
+The backend uses `server/src/data/airports.json` for airport autocomplete, coordinate lookup, and nearby-airport radius searches. Refresh the worldwide scheduled-service IATA list from OurAirports with:
+
+```bash
+npm run update:airports
+```
+
+This keeps only valid 3-letter IATA airports with scheduled service, which is the closest practical public approximation for airports that can appear in flight-search results.
+
 ## Result Scoring
 
 Flights are scored using:
@@ -216,6 +229,7 @@ The response includes ML-ready placeholders:
 npm run dev
 npm run build
 npm run start
+npm run update:airports
 ```
 
 Client-only:

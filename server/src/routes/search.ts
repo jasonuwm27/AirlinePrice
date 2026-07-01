@@ -143,7 +143,7 @@ router.get("/locations", (req: Request, res: Response) => {
   }
 });
 
-router.get("/airports/nearby", (req: Request, res: Response) => {
+router.get("/airports/nearby", async (req: Request, res: Response) => {
   try {
     const destination = String(req.query.destination ?? "");
     const radius = parseInt(String(req.query.radius ?? "100"), 10);
@@ -153,7 +153,7 @@ router.get("/airports/nearby", (req: Request, res: Response) => {
       return;
     }
 
-    const result = getNearbyAirportsPreview(destination, radius);
+    const result = await getNearbyAirportsPreview(destination, radius);
     res.json(result);
   } catch (err) {
     console.error("Nearby airports error:", err);

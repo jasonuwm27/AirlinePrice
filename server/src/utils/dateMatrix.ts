@@ -79,6 +79,21 @@ function uniqueDatePairs(pairs: DatePair[]): DatePair[] {
   });
 }
 
+function buildDatePairWithinWindow(
+  departure: Date,
+  duration: number,
+  end: Date
+): DatePair | null {
+  const returnDate = addDays(departure, duration);
+  if (returnDate > end) return null;
+
+  return {
+    departureDate: formatIsoDate(departure),
+    returnDate: formatIsoDate(returnDate),
+    tripDurationDays: duration,
+  };
+}
+
 export function generateDateMatrix(params: {
   startDate: string;
   endDate: string;
@@ -156,11 +171,8 @@ export function generateDateMatrixResult(params: {
     departure = addDays(departure, 1)
   ) {
     for (let duration = minDuration; duration <= maxDuration; duration += 1) {
-      pairs.push({
-        departureDate: formatIsoDate(departure),
-        returnDate: formatIsoDate(addDays(departure, duration)),
-        tripDurationDays: duration,
-      });
+      const pair = buildDatePairWithinWindow(departure, duration, end);
+      if (pair) pairs.push(pair);
     }
   }
 
@@ -193,11 +205,8 @@ export function generateAnchorDatePairs(params: {
     departure <= window.end;
     departure = addDays(departure, stepDays)
   ) {
-    pairs.push({
-      departureDate: formatIsoDate(departure),
-      returnDate: formatIsoDate(addDays(departure, median)),
-      tripDurationDays: median,
-    });
+    const pair = buildDatePairWithinWindow(departure, median, window.end);
+    if (pair) pairs.push(pair);
   }
 
   return pairs;
@@ -225,11 +234,8 @@ export function generateDenseDatePairsAroundAnchor(params: {
     if (departure < window.start || departure > window.end) continue;
 
     for (let duration = min; duration <= max; duration += 1) {
-      pairs.push({
-        departureDate: formatIsoDate(departure),
-        returnDate: formatIsoDate(addDays(departure, duration)),
-        tripDurationDays: duration,
-      });
+      const pair = buildDatePairWithinWindow(departure, duration, window.end);
+      if (pair) pairs.push(pair);
     }
   }
 
@@ -262,11 +268,8 @@ export function generateSparseGridDatePairs(params: {
     departure = addDays(departure, departureStepDays)
   ) {
     for (const duration of durations) {
-      pairs.push({
-        departureDate: formatIsoDate(departure),
-        returnDate: formatIsoDate(addDays(departure, duration)),
-        tripDurationDays: duration,
-      });
+      const pair = buildDatePairWithinWindow(departure, duration, window.end);
+      if (pair) pairs.push(pair);
     }
   }
 
