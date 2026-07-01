@@ -13,6 +13,7 @@ export interface SearchCriteria {
   radiusMiles: number;
   passengers: number;
   returnTrip: boolean;
+  searchDepth?: "smart" | "expanded" | "full";
 }
 
 /* ─── Airports ───────────────────────────────────────────────────── */
@@ -156,6 +157,16 @@ export interface SearchResponse {
   searchedAt: string;
 }
 
+export interface SearchEstimate {
+  datePairCount: number;
+  possibleDatePairCount: number;
+  routeTargetCount: number;
+  scanCredits: number;
+  detailCredits: number;
+  maxCredits: number;
+  cappedDatePairs: boolean;
+}
+
 export interface LocationSuggestion {
   iataCode: string;
   name: string;
@@ -181,4 +192,5 @@ export const DEFAULT_CRITERIA: SearchCriteria = {
   radiusMiles: 100,
   passengers: 1,
   returnTrip: true,
+  searchDepth: "smart",
 };

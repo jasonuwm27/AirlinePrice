@@ -9,9 +9,15 @@ function primaryAirline(flight: ScoredFlightOffer): string {
 }
 
 function groupKey(flight: ScoredFlightOffer): string {
+  const arrivalAirport =
+    flight.arrivalAirportIata ??
+    flight.outbound.segments.at(-1)?.arrivalAirport ??
+    "???";
+
   return [
     flight.departureDate,
     flight.returnDate ?? "oneway",
+    arrivalAirport,
     primaryAirline(flight),
     flight.stops,
   ].join("_");

@@ -26,6 +26,31 @@ export function formatMiles(miles: number): string {
   return `${Math.round(miles)} mi`;
 }
 
+export function todayIsoDate(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function parseIsoDateLocal(date: string): Date | null {
+  const [year, month, day] = date.split("-").map(Number);
+  if ([year, month, day].some((value) => Number.isNaN(value))) return null;
+  return new Date(year, month - 1, day);
+}
+
+export function formatIsoDateLocal(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function compareIsoDates(a: string, b: string): number {
+  return a.localeCompare(b);
+}
+
 export function calculateTripDurationDays(
   departureDate?: string,
   returnDate?: string
@@ -55,13 +80,13 @@ export function calculateTripDurationDays(
 }
 
 export function formatShortDate(date: string): string {
-  const [year, month, day] = date.split("-").map(Number);
-  if ([year, month, day].some((value) => Number.isNaN(value))) return date;
+  const parsed = parseIsoDateLocal(date);
+  if (!parsed) return date;
 
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
-  }).format(new Date(Date.UTC(year, month - 1, day)));
+  }).format(parsed);
 }
 
 /** Format driving duration in minutes to a human-friendly string like "1 hr 15 mins" */

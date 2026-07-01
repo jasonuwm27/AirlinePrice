@@ -10,6 +10,7 @@ export interface SearchCriteria {
   radiusMiles: number;
   passengers: number;
   returnTrip: boolean;
+  searchDepth?: "smart" | "expanded" | "full";
 }
 
 /* ─── Coordinates & Airports ─────────────────────────────────────── */
@@ -130,6 +131,8 @@ export interface ScoredFlightOffer {
   returnSummary?: string;
   timeOptions: FlightTimeOption[];
   groupKey?: string;
+  arrivalAirportIata?: string;
+  departureToken?: string;
 
   /* ── Scoring ── */
   totalScore: number;       // 0–100

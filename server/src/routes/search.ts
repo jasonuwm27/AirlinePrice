@@ -1,6 +1,10 @@
 import { Router, type Request, type Response } from "express";
 import { searchLocations } from "../services/airports.js";
-import { executeSearch, getNearbyAirportsPreview } from "../services/optimization.js";
+import {
+  estimateSearch,
+  executeSearch,
+  getNearbyAirportsPreview,
+} from "../services/optimization.js";
 import {
   searchFlightsMultiAirport,
   NoAirportsFoundError,
@@ -9,6 +13,31 @@ import {
 import type { FilterType, SearchCriteria } from "../types/index.js";
 
 const router = Router();
+
+function todayIsoDate(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function validateTravelWindow(
+  startDate: string,
+  endDate: string
+): string | null {
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
+    return "Dates must be in YYYY-MM-DD format.";
+  }
+  if (startDate > endDate) {
+    return "Travel window start date must be on or before the end date.";
+  }
+  if (endDate < todayIsoDate()) {
+    return "Please choose current or future travel dates.";
+  }
+  return null;
+}
 
 router.post("/search", async (req: Request, res: Response) => {
   try {
@@ -21,6 +50,15 @@ router.post("/search", async (req: Request, res: Response) => {
 
     if (!criteria.dateRangeStart || !criteria.dateRangeEnd) {
       res.status(400).json({ error: "Date range is required." });
+      return;
+    }
+
+    const dateError = validateTravelWindow(
+      criteria.dateRangeStart,
+      criteria.dateRangeEnd
+    );
+    if (dateError) {
+      res.status(400).json({ error: dateError });
       return;
     }
 
@@ -40,6 +78,49 @@ router.post("/search", async (req: Request, res: Response) => {
     console.error("Search error:", err);
     res.status(500).json({
       error: err instanceof Error ? err.message : "Internal server error",
+    });
+  }
+});
+
+router.post("/search/estimate", async (req: Request, res: Response) => {
+  try {
+    const criteria = req.body as SearchCriteria;
+
+    if (!criteria.destination) {
+      res.status(400).json({ error: "Destination is required." });
+      return;
+    }
+
+    if (!criteria.dateRangeStart || !criteria.dateRangeEnd) {
+      res.status(400).json({ error: "Date range is required." });
+      return;
+    }
+
+    const dateError = validateTravelWindow(
+      criteria.dateRangeStart,
+      criteria.dateRangeEnd
+    );
+    if (dateError) {
+      res.status(400).json({ error: dateError });
+      return;
+    }
+
+    const result = await estimateSearch({
+      ...criteria,
+      origin: criteria.origin?.toUpperCase() ?? "",
+      destination: criteria.destination.toUpperCase(),
+      radiusMiles: criteria.radiusMiles ?? 100,
+      passengers: criteria.passengers ?? 1,
+      tripDurationMin: criteria.tripDurationMin ?? 7,
+      tripDurationMax: criteria.tripDurationMax ?? 10,
+      returnTrip: criteria.returnTrip ?? true,
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error("Search estimate error:", err);
+    res.status(500).json({
+      error: err instanceof Error ? err.message : "Estimate failed",
     });
   }
 });
@@ -153,6 +234,18 @@ router.get("/search-flights", async (req: Request, res: Response) => {
     if (returnDate && !dateRegex.test(returnDate)) {
       res.status(400).json({
         error: "return_date must be in YYYY-MM-DD format.",
+      });
+      return;
+    }
+    if (departureDate < todayIsoDate()) {
+      res.status(400).json({
+        error: "departure_date must be today or a future date.",
+      });
+      return;
+    }
+    if (returnDate && returnDate < departureDate) {
+      res.status(400).json({
+        error: "return_date must be on or after departure_date.",
       });
       return;
     }

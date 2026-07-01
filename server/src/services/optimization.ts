@@ -2,7 +2,11 @@ import {
   findNearbyAirports,
   resolveAirportCoords,
 } from "./airports.js";
-import { searchFlightMatrixOffers } from "./serpapi.js";
+import {
+  buildDateMatrixPlan,
+  estimateSerpApiCredits,
+  searchFlightMatrixOffers,
+} from "./serpapi.js";
 import {
   estimateDrivingCost,
   getDrivingDistanceMiles,
@@ -32,26 +36,6 @@ async function findNearbyAirportsForDestination(
   return airports.slice(0, MAX_ALTERNATIVES);
 }
 
-async function searchRouteFlights(
-  origin: string,
-  destination: string,
-  criteria: SearchCriteria
-): Promise<ScoredFlightOffer[]> {
-  if (!criteria.returnTrip) {
-    throw new Error("Flexible matrix search currently requires a round trip.");
-  }
-
-  return searchFlightMatrixOffers({
-    origin,
-    destination,
-    startDate: criteria.dateRangeStart,
-    endDate: criteria.dateRangeEnd,
-    minDuration: criteria.tripDurationMin,
-    maxDuration: criteria.tripDurationMax,
-    adults: criteria.passengers,
-  });
-}
-
 function buildRouteOption(
   partial: Omit<RouteOption, "totalCost" | "savingsVsDirect">
 ): RouteOption {
@@ -62,6 +46,28 @@ function buildRouteOption(
     totalCost,
     savingsVsDirect: null,
   };
+}
+
+function flightArrivalAirport(flight: ScoredFlightOffer): string {
+  return (
+    flight.arrivalAirportIata ??
+    flight.outbound.segments.at(-1)?.arrivalAirport ??
+    ""
+  ).toUpperCase();
+}
+
+function flightsForArrival(
+  flights: ScoredFlightOffer[],
+  arrivalAirport: string
+): ScoredFlightOffer[] {
+  const arrival = arrivalAirport.toUpperCase();
+  return flights.filter((flight) => flightArrivalAirport(flight) === arrival);
+}
+
+function cheapestPrice(flights: ScoredFlightOffer[]): number {
+  return flights.length > 0
+    ? Math.min(...flights.map((flight) => flight.price))
+    : 0;
 }
 
 function applySavings(routes: RouteOption[]): RouteOption[] {
@@ -84,6 +90,10 @@ export async function executeSearch(criteria: SearchCriteria): Promise<SearchRes
   const origin = criteria.origin.toUpperCase();
   const destination = criteria.destination.toUpperCase();
 
+  if (!criteria.returnTrip) {
+    throw new Error("Flexible optimized search currently requires a round trip.");
+  }
+
   const destCoords = resolveAirportCoords(destination);
   const nearbyAirports = await findNearbyAirportsForDestination(
     destination,
@@ -91,10 +101,27 @@ export async function executeSearch(criteria: SearchCriteria): Promise<SearchRes
     criteria.radiusMiles
   );
 
-  const directFlights = await searchRouteFlights(origin, destination, criteria);
-  const bestDirectPrice = directFlights.length > 0
-    ? Math.min(...directFlights.map((flight) => flight.price))
-    : 0;
+  const alternativeTargets = nearbyAirports.filter(
+    (ap) => ap.iataCode !== destination
+  );
+  const targetAirportCodes = [
+    destination,
+    ...alternativeTargets.map((airport) => airport.iataCode),
+  ];
+
+  const allFlights = await searchFlightMatrixOffers({
+    origin,
+    destinations: targetAirportCodes,
+    startDate: criteria.dateRangeStart,
+    endDate: criteria.dateRangeEnd,
+    minDuration: criteria.tripDurationMin,
+    maxDuration: criteria.tripDurationMax,
+    adults: criteria.passengers,
+    searchDepth: criteria.searchDepth ?? "smart",
+  });
+
+  const directFlights = flightsForArrival(allFlights, destination);
+  const bestDirectPrice = cheapestPrice(directFlights);
 
   const directRoute = buildRouteOption({
     id: "direct",
@@ -111,25 +138,17 @@ export async function executeSearch(criteria: SearchCriteria): Promise<SearchRes
     totalDurationMinutes: directFlights[0]?.totalDurationMinutes ?? 0,
   });
 
-  const alternativeTargets = nearbyAirports.filter(
-    (ap) => ap.iataCode !== destination
-  );
-
   const altResults = await runWithConcurrency(
     alternativeTargets,
     MAX_CONCURRENT,
     BATCH_DELAY,
     async (airport): Promise<RouteOption> => {
       try {
-        const [topFlights, airportCoords] = await Promise.all([
-          searchRouteFlights(origin, airport.iataCode, criteria),
-          Promise.resolve(resolveAirportCoords(airport.iataCode)),
-        ]);
+        const topFlights = flightsForArrival(allFlights, airport.iataCode);
+        const airportCoords = resolveAirportCoords(airport.iataCode);
 
         const driving = await getDrivingDistanceMiles(airportCoords, destCoords);
-        const bestPrice = topFlights.length > 0
-          ? Math.min(...topFlights.map((flight) => flight.price))
-          : 0;
+        const bestPrice = cheapestPrice(topFlights);
 
         return buildRouteOption({
           id: `alt-${airport.iataCode}`,
@@ -178,6 +197,49 @@ export async function executeSearch(criteria: SearchCriteria): Promise<SearchRes
     destinationCoords: destCoords,
     nearbyAirports,
     searchedAt: new Date().toISOString(),
+  };
+}
+
+export async function estimateSearch(criteria: SearchCriteria): Promise<{
+  datePairCount: number;
+  possibleDatePairCount: number;
+  routeTargetCount: number;
+  scanCredits: number;
+  detailCredits: number;
+  maxCredits: number;
+  cappedDatePairs: boolean;
+}> {
+  const destination = criteria.destination.toUpperCase();
+  const destCoords = resolveAirportCoords(destination);
+  const nearbyAirports = await findNearbyAirportsForDestination(
+    destination,
+    destCoords,
+    criteria.radiusMiles
+  );
+  const alternativeTargets = nearbyAirports.filter(
+    (ap) => ap.iataCode !== destination
+  );
+  const dateMatrixPlan = buildDateMatrixPlan({
+    startDate: criteria.dateRangeStart,
+    endDate: criteria.dateRangeEnd,
+    minDuration: criteria.tripDurationMin,
+    maxDuration: criteria.tripDurationMax,
+    searchDepth: criteria.searchDepth ?? "smart",
+  });
+  const credits = estimateSerpApiCredits({
+    routeTargetCount: 1 + alternativeTargets.length,
+    datePairCount:
+      dateMatrixPlan.estimatedQueryCount ?? dateMatrixPlan.selectedPairs.length,
+    useMultiAirport: true,
+  });
+  const estimatedDatePairCount =
+    dateMatrixPlan.estimatedQueryCount ?? dateMatrixPlan.selectedPairs.length;
+  return {
+    datePairCount: Math.min(estimatedDatePairCount, dateMatrixPlan.totalPairs),
+    possibleDatePairCount: dateMatrixPlan.totalPairs,
+    routeTargetCount: 1 + alternativeTargets.length,
+    cappedDatePairs: estimatedDatePairCount < dateMatrixPlan.totalPairs,
+    ...credits,
   };
 }
 

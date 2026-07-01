@@ -1,4 +1,4 @@
-import { Loader2, MapPin, Plane, Search, Users } from "lucide-react";
+import { Info, Loader2, MapPin, Plane, Search, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { DateRangeSelector } from "@/components/DateRangeSelector";
 import { RadiusSlider } from "@/components/RadiusSlider";
@@ -13,9 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useSearch } from "@/context/SearchContext";
-import { suggestLocations } from "@/lib/api";
-import type { LocationSuggestion } from "@/types";
+import { estimateSearchCredits, suggestLocations } from "@/lib/api";
+import type { LocationSuggestion, SearchEstimate } from "@/types";
 
 function AirportInput({
   id,
@@ -73,7 +74,9 @@ function AirportInput({
           placeholder={placeholder}
           className="pl-9 uppercase"
           onChange={(e) => {
-            setInputValue(e.target.value.toUpperCase());
+            const nextValue = e.target.value.toUpperCase();
+            setInputValue(nextValue);
+            onChange(nextValue);
             setShowSuggestions(true);
           }}
           onFocus={() => setShowSuggestions(true)}
@@ -106,6 +109,56 @@ function AirportInput({
 
 export function SearchPanel() {
   const { criteria, setCriteria, executeSearch, isLoading } = useSearch();
+  const [estimate, setEstimate] = useState<SearchEstimate | null>(null);
+
+  useEffect(() => {
+    if (
+      !criteria.destination ||
+      !criteria.dateRangeStart ||
+      !criteria.dateRangeEnd ||
+      !criteria.returnTrip
+    ) {
+      setEstimate(null);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const nextEstimate = await estimateSearchCredits(criteria);
+        if (!cancelled) setEstimate(nextEstimate);
+      } catch {
+        if (!cancelled) setEstimate(null);
+      }
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [criteria]);
+
+  const handleSearch = async () => {
+    if (
+      estimate &&
+      (estimate.maxCredits > 100 || criteria.searchDepth === "full")
+    ) {
+      const proceed = window.confirm(
+        `This search may use up to ${estimate.maxCredits} SerpAPI credits and will search ${estimate.datePairCount} of ${estimate.possibleDatePairCount} possible date pairs. Continue?`
+      );
+      if (!proceed) return;
+    }
+
+    await executeSearch();
+  };
+  const allDatePairsSelected =
+    estimate && estimate.datePairCount >= estimate.possibleDatePairCount;
+  const coverageNote =
+    criteria.searchDepth === "smart"
+      ? " Smart uses anchor dates first, then drills into the cheapest local window."
+      : criteria.searchDepth === "expanded"
+        ? " Expanded uses a sparse grid across the full range."
+        : "";
 
   return (
     <Card className="border-0 shadow-lg">
@@ -219,10 +272,56 @@ export function SearchPanel() {
           onChange={(miles) => setCriteria({ radiusMiles: miles })}
         />
 
+        <div className="space-y-2">
+          <Label>Search Coverage</Label>
+          <ToggleGroup
+            value={criteria.searchDepth ?? "smart"}
+            onValueChange={(value) => {
+              if (!value) return;
+              setCriteria({
+                searchDepth: value as "smart" | "expanded" | "full",
+              });
+            }}
+            className="grid grid-cols-3 gap-2"
+          >
+            <ToggleGroupItem value="smart" className="w-full">
+              Smart
+            </ToggleGroupItem>
+            <ToggleGroupItem value="expanded" className="w-full">
+              Expanded
+            </ToggleGroupItem>
+            <ToggleGroupItem value="full" className="w-full">
+              Full
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
+        {estimate && (
+          <div className="flex items-start gap-2 rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <p>
+              Estimated SerpAPI use: up to{" "}
+              <span className="font-medium text-foreground">
+                {estimate.maxCredits} credits
+              </span>{" "}
+              ({estimate.scanCredits} matrix scans + {estimate.detailCredits} itinerary detail calls).
+              Searching{" "}
+              <span className="font-medium text-foreground">
+                {estimate.datePairCount} of {estimate.possibleDatePairCount}
+              </span>{" "}
+              possible date pairs across{" "}
+              {estimate.routeTargetCount} airport target
+              {estimate.routeTargetCount === 1 ? "" : "s"} with one multi-airport query per date pair.
+              {!allDatePairsSelected && coverageNote}
+              {!allDatePairsSelected && " Use Expanded or Full to cover more dates."}
+            </p>
+          </div>
+        )}
+
         <Button
           className="w-full"
           size="lg"
-          onClick={executeSearch}
+          onClick={handleSearch}
           disabled={isLoading}
         >
           {isLoading ? (

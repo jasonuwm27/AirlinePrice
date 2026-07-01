@@ -83,7 +83,10 @@ function buildLegSummary(segments: FlightSegment[]): string {
   return `${first.departureAirport} ${first.departureTime} -> ${last.arrivalAirport} ${last.arrivalTime}`;
 }
 
-function mapFlightLeg(result: SerpApiFlightResult, date: string): FlightLeg {
+export function mapSerpApiFlightLeg(
+  result: SerpApiFlightResult,
+  date: string
+): FlightLeg {
   const segments = mapSegments(result);
   const layovers = mapLayovers(result);
 
@@ -105,9 +108,11 @@ export function mapSerpApiFlight(
   currency = "USD",
   inboundResult?: SerpApiFlightResult
 ): ScoredFlightOffer {
-  const outbound = mapFlightLeg(result, departureDate);
+  const outbound = mapSerpApiFlightLeg(result, departureDate);
   const inbound =
-    inboundResult && returnDate ? mapFlightLeg(inboundResult, returnDate) : undefined;
+    inboundResult && returnDate
+      ? mapSerpApiFlightLeg(inboundResult, returnDate)
+      : undefined;
   const allLayovers = [...outbound.layovers, ...(inbound?.layovers ?? [])];
   const amenities = inboundResult
     ? parseAmenities(result, inboundResult)
@@ -136,6 +141,8 @@ export function mapSerpApiFlight(
     returnSummary:
       inbound?.summary ?? (returnDate ? `Return: ${returnDate}` : undefined),
     timeOptions: [],
+    arrivalAirportIata: arrAirport,
+    departureToken: result.departure_token,
 
     totalScore: 0,
     priceScore: 0,
@@ -162,4 +169,27 @@ export function mapSerpApiResults(
   return results.map((result, index) =>
     mapSerpApiFlight(result, index, departureDate, returnDate, currency)
   );
+}
+
+export function attachInboundSerpApiFlight(
+  flight: ScoredFlightOffer,
+  inboundResult: SerpApiFlightResult,
+  currency = flight.currency
+): ScoredFlightOffer {
+  if (!flight.returnDate) return flight;
+
+  const inbound = mapSerpApiFlightLeg(inboundResult, flight.returnDate);
+  const layovers = [...flight.outbound.layovers, ...inbound.layovers];
+
+  return {
+    ...flight,
+    price: inboundResult.price ?? flight.price,
+    currency,
+    totalDurationMinutes:
+      flight.outbound.totalDurationMinutes + inbound.totalDurationMinutes,
+    stops: flight.outbound.stops + inbound.stops,
+    inbound,
+    layovers,
+    returnSummary: inbound.summary,
+  };
 }

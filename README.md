@@ -1,151 +1,233 @@
-# FlightPrice — Real-Time Flight Tracker & Optimization Dashboard
+# FlightPrice
 
-A responsive web application that finds the cheapest flights between an origin and destination, including **alternative airport routing** — fly to a nearby airport within a user-defined driving radius and compare total cost (flight + ground transit) against the direct option.
+FlightPrice is a flight deal and route optimization app for flexible round-trip travel. It compares direct flights against nearby alternative arrival airports, then factors in the driving time and cost from the alternative airport to the final destination.
+
+The app is designed to keep SerpAPI usage visible and controlled while still searching useful flexible-date combinations.
 
 ## Features
 
-- **Multi-month date range selector** — flexible travel windows (e.g., Sept–Nov 2026) with configurable trip duration (7–10 days)
-- **Alternative destination radius control** — slider (0–200 mi) to find commercial airports near your final destination
-- **Live flight pricing** — [SerpAPI Google Flights](https://serpapi.com/google-flights-api) (real Google Flights data)
-- **Total cost comparison engine** — `Total = Flight Cost + (Driving Miles × $0.20/mi)`
-- **Results matrix** — direct vs. alternative routes with net savings highlighted
-- **Sorting** — Cheapest, Fastest, Best Value
+- Flexible round-trip travel window with separate start and end date buttons
+- Current/future date enforcement on the frontend and backend
+- Trip duration range, for example 5-10 days
+- Alternative airport radius search
+- Direct route vs. fly-and-drive route comparison
+- SerpAPI Google Flights native round-trip queries
+- Max-IATA multi-airport searches, capped at 4 origin and 4 destination airports per query
+- Smart, Expanded, and Full search coverage modes
+- Live SerpAPI credit estimate before search
+- Accordion result cards with outbound and return itinerary details
+- Deal scoring, price-vs-average labels, confidence, and prediction placeholders
+- Load-more pagination for result cards
+- In-memory global SerpAPI cache with 12-hour TTL
+
+## Search Coverage Modes
+
+### Smart
+
+Smart mode uses an Anchor and Drill-Down algorithm:
+
+1. Sparse anchor scan across the travel window.
+2. Uses every 4th departure day.
+3. Uses the median trip duration.
+4. Finds the cheapest anchor departure date.
+5. Runs a dense local scan 2 days before and after that anchor.
+6. Uses the full trip-duration range for the dense scan.
+
+This keeps request count low while still looking for price valleys.
+
+### Expanded
+
+Expanded mode uses a sparse grid:
+
+1. Generates all mathematically valid departure/return date pairs.
+2. Samples every 2nd departure date.
+3. Uses only min, median, and max trip durations.
+4. Hard-caps sampled combinations at 40 date-pair calls.
+5. Spreads the sample across the calendar window.
+
+### Full
+
+Full mode searches every valid round-trip date pair in the selected window. It is the most complete mode and can use many more API credits.
+
+## API Credit Strategy
+
+The backend avoids the old brute-force explosion by:
+
+- Sending comma-separated origin and destination IATA lists to SerpAPI
+- Querying native round trips only
+- Avoiding split-and-stitch one-way pricing
+- Caching SerpAPI responses globally for 12 hours
+- Estimating request count before search
+- Hydrating detailed return itineraries only for top grouped results
+
+Cache keys are user-independent:
+
+```text
+FLIGHTS_${departureString}_${arrivalString}_${outboundDate}_${returnDate}
+FLIGHT_DETAILS_${departureString}_${arrivalString}_${outboundDate}_${returnDate}_${departureToken}
+```
 
 ## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
-| Frontend | React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, Lucide React |
+| --- | --- |
+| Frontend | React 18, Vite, TypeScript, Tailwind CSS, shadcn-style components, Lucide React |
 | State | React Context API |
-| Backend | Express.js (API proxy, key security, orchestration) |
-| Flights | **SerpAPI** — Google Flights engine |
-| Airports | Static IATA dataset (`server/src/data/airports.json`) for geolocation & radius search |
-| Driving | OpenStreetMap OSRM (free, no token) |
+| Backend | Node.js, Express, TypeScript |
+| Flights | SerpAPI Google Flights engine |
+| Airports | Local IATA dataset |
+| Driving | OSRM / OpenStreetMap |
 
-## File Structure
+## Project Structure
 
-```
+```text
 FlightPrice/
-├── package.json
-├── README.md
-├── client/
-│   ├── src/
-│   │   ├── components/       # SearchPanel, DateRangeSelector, RadiusSlider, ResultsMatrix
-│   │   ├── context/          # SearchContext
-│   │   ├── lib/              # API client + utilities
-│   │   └── types/
-│   └── package.json
-└── server/
-    ├── .env.example
-    ├── src/
-    │   ├── index.ts
-    │   ├── data/
-    │   │   └── airports.json     # ~130 commercial airports (expand as needed)
-    │   ├── routes/search.ts
-    │   └── services/
-    │       ├── serpapi.ts        # SerpAPI Google Flights integration
-    │       ├── airports.ts       # Airport lookup, autocomplete, radius filtering
-    │       ├── osrm.ts           # Driving distance
-    │       ├── flightMapper.ts   # SerpAPI → app model
-    │       └── optimization.ts   # Search orchestration + cost engine
-    └── package.json
+  client/
+    src/
+      components/
+        DateRangeSelector.tsx
+        FlightItinerary.tsx
+        RadiusSlider.tsx
+        ResultsMatrix.tsx
+        SearchPanel.tsx
+      context/
+        SearchContext.tsx
+      lib/
+        api.ts
+        utils.ts
+      types/
+        index.ts
+  server/
+    src/
+      data/
+        airports.json
+      routes/
+        search.ts
+      services/
+        airports.ts
+        flightMapper.ts
+        optimization.ts
+        osrm.ts
+        searchFlights.ts
+        serpapi.ts
+      utils/
+        concurrency.ts
+        dateMatrix.ts
+        distance.ts
+        flightGrouping.ts
+        geo.ts
+        scoring.ts
 ```
 
-## Prerequisites
+## Setup
 
-- **Node.js 18+** and npm
-- **SerpAPI account** — [serpapi.com/dashboard](https://serpapi.com/dashboard)
-
-## Installation
-
-### 1. Install dependencies
+Install dependencies:
 
 ```bash
-cd FlightPrice
 npm install
 npm install --prefix client
 npm install --prefix server
 ```
 
-### 2. Configure SerpAPI key
+Create the server environment file:
 
-```bash
-copy server\.env.example server\.env
+```powershell
+Copy-Item server\.env.example server\.env
 ```
 
 Edit `server/.env`:
 
 ```env
-SERPAPI_API_KEY=your_api_key_here
+SERPAPI_API_KEY=your_serpapi_key_here
 PORT=3001
 COST_PER_MILE=0.20
 MAX_CONCURRENT_SEARCHES=3
 API_BATCH_DELAY_MS=500
-SERPAPI_DEEP_SEARCH=false
+SERPAPI_DATE_PAIR_CONCURRENT=2
+SERPAPI_DETAIL_CONCURRENT=3
+SERPAPI_MAX_RESULTS=25
+SERPAPI_MAX_DATE_PAIRS=30
+SERPAPI_EXPANDED_MAX_DATE_PAIRS=90
+SERPAPI_MAX_DETAIL_HYDRATIONS=20
+SERPAPI_CACHE_TTL_MS=43200000
 ```
 
-Get your API key from the [SerpAPI Dashboard](https://serpapi.com/dashboard).
-
-> **Note:** Each search triggers 1 SerpAPI call per route compared (direct + up to 5 alternatives). A full search uses up to 6 API credits. Adjust `MAX_CONCURRENT_SEARCHES` and `API_BATCH_DELAY_MS` to stay within rate limits.
-
-### 3. Run development servers
+Run the app:
 
 ```bash
 npm run dev
 ```
 
-- **Frontend:** http://localhost:5173
-- **Backend:** http://localhost:3001
-
-## Usage
-
-1. Enter **origin** and **destination** airport codes (autocomplete from local airport database).
-2. Select a **flexible date range** spanning multiple months.
-3. Set **trip duration** (e.g., 7–10 days for round trips).
-4. Adjust the **alternative airport radius** slider (e.g., 100 miles).
-5. Click **Search & Compare Routes**.
+- Frontend: http://localhost:5173
+- Backend: http://localhost:3001
 
 ## API Endpoints
 
 | Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/health` | Health check |
-| `POST` | `/api/search` | Full flight search + optimization |
-| `GET` | `/api/locations?keyword=JFK` | Airport autocomplete |
-| `GET` | `/api/airports/nearby?destination=MIA&radius=100` | Preview nearby airports |
+| --- | --- | --- |
+| GET | `/api/health` | Backend health check |
+| POST | `/api/search/estimate` | Estimate date-pair coverage and SerpAPI credits |
+| POST | `/api/search` | Main optimized flight search |
+| GET | `/api/locations?keyword=ORD` | Airport autocomplete |
+| GET | `/api/airports/nearby?destination=MSY&radius=100` | Nearby airport preview |
+| GET | `/api/search-flights` | Secondary multi-airport search endpoint |
 
-## SerpAPI Integration
+## Search Flow
 
-Flight searches use the [Google Flights engine](https://serpapi.com/google-flights-api):
+1. Resolve destination airport coordinates.
+2. Find nearby airports within the selected radius.
+3. Build max-IATA airport strings for SerpAPI.
+4. Generate date pairs based on Smart, Expanded, or Full mode.
+5. Fetch native round-trip Google Flights results.
+6. Combine `best_flights` and `other_flights`.
+7. Group by date, arrival airport, airline, and stop count.
+8. Score grouped results.
+9. Hydrate return details for top grouped results.
+10. Return direct and alternative route cards to the frontend.
 
+## Result Scoring
+
+Flights are scored using:
+
+- Price vs. searched average
+- Total duration
+- Stop count
+- Overnight layovers
+- Baggage indicators
+- Wi-Fi indicators
+- Airline tier
+
+The response includes ML-ready placeholders:
+
+- `trend`
+- `recommendation`
+- `confidence`
+- `mlFeatures`
+
+## Security Notes
+
+- Do not commit `server/.env`.
+- `server/.env.example` must contain placeholders only.
+- If a real API key was ever committed, rotate it in the SerpAPI dashboard.
+
+## Scripts
+
+```bash
+npm run dev
+npm run build
+npm run start
 ```
-GET https://serpapi.com/search?engine=google_flights&api_key=...&departure_id=JFK&arrival_id=MIA&outbound_date=2026-09-15&return_date=2026-09-22&type=1&sort_by=2
+
+Client-only:
+
+```bash
+npm run build --prefix client
 ```
 
-- `type=1` — round trip (with `return_date`)
-- `type=2` — one way
-- `sort_by=2` — sort by price
-- Set `SERPAPI_DEEP_SEARCH=true` for browser-identical results (slower, more credits)
+Server-only:
 
-## Adding Airports
-
-If an airport isn't found, add it to `server/src/data/airports.json`:
-
-```json
-{"iata":"XYZ","name":"Airport Name","city":"City","country":"United States","lat":00.0000,"lon":-00.0000}
-```
-
-## Architecture
-
-```
-┌─────────────┐     /api/*      ┌──────────────────┐
-│  React UI   │ ──────────────► │  Express Server  │
-└─────────────┘                 └────────┬─────────┘
-                                         │
-                          ┌──────────────┼──────────────┐
-                          ▼              ▼              ▼
-                    SerpAPI         airports.json    OSRM API
-                  (Google Flights)  (geolocation)   (driving)
+```bash
+npm run build --prefix server
 ```
 
 ## License

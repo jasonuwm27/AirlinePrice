@@ -1,4 +1,9 @@
-import type { LocationSuggestion, SearchCriteria, SearchResponse } from "@/types";
+import type {
+  LocationSuggestion,
+  SearchCriteria,
+  SearchEstimate,
+  SearchResponse,
+} from "@/types";
 
 const API_BASE = "/api";
 
@@ -18,6 +23,15 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 
 export async function searchFlights(criteria: SearchCriteria): Promise<SearchResponse> {
   return fetchJson<SearchResponse>(`${API_BASE}/search`, {
+    method: "POST",
+    body: JSON.stringify(criteria),
+  });
+}
+
+export async function estimateSearchCredits(
+  criteria: SearchCriteria
+): Promise<SearchEstimate> {
+  return fetchJson<SearchEstimate>(`${API_BASE}/search/estimate`, {
     method: "POST",
     body: JSON.stringify(criteria),
   });

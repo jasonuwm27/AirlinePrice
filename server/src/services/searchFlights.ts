@@ -268,6 +268,7 @@ export async function searchFlightsMultiAirport(
 
   // Always use deep_search to ensure regional airports (e.g. BTR) return data
   queryParams.deep_search = "true";
+  queryParams.show_hidden = "true";
 
   // 5. Execute SerpAPI request
   let data: SerpApiFlightsResponse;

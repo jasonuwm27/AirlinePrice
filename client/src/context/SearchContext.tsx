@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { searchFlights } from "@/lib/api";
+import { compareIsoDates, todayIsoDate } from "@/lib/utils";
 import type { RouteOption, SearchCriteria, SearchResponse, SortOption } from "@/types";
 import { DEFAULT_CRITERIA } from "@/types";
 
@@ -62,6 +63,15 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     }
     if (!criteria.dateRangeStart || !criteria.dateRangeEnd) {
       setError("Please select a date range.");
+      return;
+    }
+    const today = todayIsoDate();
+    if (compareIsoDates(criteria.dateRangeEnd, today) < 0) {
+      setError("Please choose current or future travel dates.");
+      return;
+    }
+    if (compareIsoDates(criteria.dateRangeStart, criteria.dateRangeEnd) > 0) {
+      setError("The travel window start date must be on or before the end date.");
       return;
     }
 
