@@ -12,6 +12,13 @@ import { findAirportsInRadius } from "../utils/distance.js";
 import { scoreAndRankFlights } from "../utils/scoring.js";
 import { resolveAirportByQuery } from "./airports.js";
 import { mapSerpApiFlight } from "./flightMapper.js";
+import {
+  fetchSerpApi,
+  getApiKey,
+  getFlightResults,
+  sanitizeIata,
+} from "./serpapi.js";
+import { runLimited } from "../utils/concurrency.js";
 import type {
   MultiAirportFlightOffer,
   MultiAirportSearchParams,
@@ -21,7 +28,6 @@ import type {
   SerpApiFlightsResponse,
 } from "../types/index.js";
 
-const SERPAPI_BASE = "https://serpapi.com/search";
 const MAX_AIRPORTS = 5;
 const MAX_RESULTS = 25;
 const MAX_RETURN_LOOKUPS = parseInt(
@@ -34,18 +40,11 @@ const MAX_RETURN_CONCURRENT = parseInt(
 );
 
 /**
- * Retrieve and validate the SerpAPI key from environment.
- * Throws immediately with a clear message if missing.
+ * Sanitize a free-text string for safe inclusion in error messages (HIGH-4).
+ * Strips HTML-sensitive characters and truncates.
  */
-function getApiKey(): string {
-  const key = process.env.SERPAPI_API_KEY;
-  if (!key) {
-    throw new Error(
-      "SerpAPI key not configured. Set SERPAPI_API_KEY in server/.env " +
-        "(get one at https://serpapi.com/dashboard)"
-    );
-  }
-  return key;
+function sanitizeUserInput(input: string): string {
+  return input.replace(/[<>&"']/g, "").slice(0, 100);
 }
 
 /**
@@ -66,69 +65,7 @@ function extractPriceInsights(
   };
 }
 
-function getFlightResults(data: SerpApiFlightsResponse) {
-  return [...(data.best_flights ?? []), ...(data.other_flights ?? [])];
-}
 
-function buildUrl(queryParams: Record<string, string>): string {
-  const url = new URL(SERPAPI_BASE);
-  for (const [key, value] of Object.entries(queryParams)) {
-    url.searchParams.set(key, value);
-  }
-  return url.toString();
-}
-
-async function fetchSerpApi(
-  queryParams: Record<string, string>
-): Promise<SerpApiFlightsResponse> {
-  const res = await fetch(buildUrl(queryParams));
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(
-      `SerpAPI request failed (HTTP ${res.status}): ${text.slice(0, 300)}`
-    );
-  }
-
-  const data = (await res.json()) as SerpApiFlightsResponse;
-
-  if (data.error) {
-    throw new Error(`SerpAPI error: ${data.error}`);
-  }
-
-  if (data.search_metadata?.status === "Error") {
-    throw new Error(
-      `SerpAPI search failed: ${data.search_metadata?.json_endpoint ?? "unknown error"}`
-    );
-  }
-
-  return data;
-}
-
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  limit: number,
-  mapper: (item: T, index: number) => Promise<R | null>
-): Promise<R[]> {
-  const results: R[] = [];
-  let nextIndex = 0;
-
-  async function worker(): Promise<void> {
-    while (nextIndex < items.length) {
-      const index = nextIndex;
-      nextIndex += 1;
-      const mapped = await mapper(items[index], index);
-      if (mapped) results.push(mapped);
-    }
-  }
-
-  const workers = Array.from(
-    { length: Math.min(limit, items.length) },
-    () => worker()
-  );
-  await Promise.all(workers);
-  return results;
-}
 
 /**
  * Map raw SerpAPI flight results to MultiAirportFlightOffer objects.
@@ -151,7 +88,7 @@ async function mapFlightOffers(
       .filter((result) => Boolean(result.departure_token))
       .slice(0, Math.max(1, MAX_RETURN_LOOKUPS));
 
-    const mappedRoundTrips = await mapWithConcurrency(
+    const allMapped = await runLimited(
       candidates,
       Math.max(1, MAX_RETURN_CONCURRENT),
       async (result, index) => {
@@ -180,10 +117,14 @@ async function mapFlightOffers(
             ...base,
             arrivalAirportIata,
           };
-        } catch {
+        } catch (err) {
+          console.warn(`Return flight hydration failed for index ${index}:`, err);
           return null;
         }
       }
+    );
+    const mappedRoundTrips = allMapped.filter(
+      (r): r is MultiAirportFlightOffer => r !== null
     );
 
     return scoreAndRankFlights(mappedRoundTrips, MAX_RESULTS) as MultiAirportFlightOffer[];
@@ -218,7 +159,7 @@ export async function searchFlightsMultiAirport(
 
   if (!resolvedAirport) {
     throw new AirportNotFoundError(
-      `No airport found matching "${params.destinationQuery}". ` +
+      `No airport found matching "${sanitizeUserInput(params.destinationQuery)}". ` +
         `Check your spelling or add a new entry to server/src/data/airports.json using this format:\n` +
         `{"iata":"XYZ","name":"Name","city":"City","country":"Country","lat":0.0,"lon":0.0}`
     );
@@ -237,7 +178,7 @@ export async function searchFlightsMultiAirport(
     throw new NoAirportsFoundError(
       `No airports found within ${params.maxThreshold} ` +
         `${params.filterType === "hours" ? "driving hours" : "miles"} of ` +
-        `"${params.destinationQuery}" (resolved to ${resolvedAirport.name}, ` +
+        `"${sanitizeUserInput(params.destinationQuery)}" (resolved to ${resolvedAirport.name}, ` +
         `${resolvedAirport.city}). Try increasing your threshold or choosing ` +
         `a different destination.`
     );
@@ -246,14 +187,14 @@ export async function searchFlightsMultiAirport(
   // 3. Build comma-separated arrival_id string (e.g. "ORD,MDW,MKE")
   //    Sanitize each code to strict uppercase 3-letter IATA format
   const arrivalId = nearbyAirports
-    .map((a) => a.iataCode.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3))
+    .map((a) => sanitizeIata(a.iataCode))
     .join(",");
 
   // 4. Build SerpAPI query parameters
   const queryParams: Record<string, string> = {
     engine: "google_flights",
     api_key: getApiKey(),
-    departure_id: params.departureId.toUpperCase(),
+    departure_id: sanitizeIata(params.departureId),
     arrival_id: arrivalId,
     outbound_date: params.departureDate,
     type: params.returnDate ? "1" : "2", // 1 = round trip, 2 = one way

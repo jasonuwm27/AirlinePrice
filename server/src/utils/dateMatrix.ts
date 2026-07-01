@@ -163,6 +163,15 @@ export function generateDateMatrixResult(params: {
     return { allPairs: [], selectedPairs: [], totalPairs: 0 };
   }
 
+  // Guard against excessively large windows (MED-3)
+  const MAX_WINDOW_DAYS = 120;
+  const windowDays = Math.round((end.getTime() - start.getTime()) / DAY_MS);
+  if (windowDays > MAX_WINDOW_DAYS) {
+    throw new Error(
+      `Travel window too large (${windowDays} days). Maximum is ${MAX_WINDOW_DAYS} days.`
+    );
+  }
+
   const pairs: DatePair[] = [];
 
   for (

@@ -1,4 +1,5 @@
 import { Router, type Request, type Response } from "express";
+import { z } from "zod";
 import { searchLocations } from "../services/airports.js";
 import {
   estimateSearch,
@@ -10,9 +11,24 @@ import {
   NoAirportsFoundError,
   AirportNotFoundError,
 } from "../services/searchFlights.js";
-import type { FilterType, SearchCriteria } from "../types/index.js";
+import type { FilterType } from "../types/index.js";
 
 const router = Router();
+
+// ── Zod Schemas (MED-1) ──
+
+const SearchCriteriaSchema = z.object({
+  origin: z.string().min(2).max(4).regex(/^[A-Za-z]+$/, "Origin must be letters only"),
+  destination: z.string().min(2).max(4).regex(/^[A-Za-z]+$/, "Destination must be letters only"),
+  dateRangeStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Start date must be YYYY-MM-DD"),
+  dateRangeEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be YYYY-MM-DD"),
+  tripDurationMin: z.number().int().min(1).max(90).default(7),
+  tripDurationMax: z.number().int().min(1).max(90).default(10),
+  radiusMiles: z.number().min(0).max(500).default(100),
+  passengers: z.number().int().min(1).max(9).default(1),
+  returnTrip: z.boolean().default(true),
+  searchDepth: z.enum(["smart", "expanded", "full"]).optional(),
+});
 
 function todayIsoDate(): string {
   const today = new Date();
@@ -26,10 +42,6 @@ function validateTravelWindow(
   startDate: string,
   endDate: string
 ): string | null {
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
-    return "Dates must be in YYYY-MM-DD format.";
-  }
   if (startDate > endDate) {
     return "Travel window start date must be on or before the end date.";
   }
@@ -41,17 +53,15 @@ function validateTravelWindow(
 
 router.post("/search", async (req: Request, res: Response) => {
   try {
-    const criteria = req.body as SearchCriteria;
-
-    if (!criteria.origin || !criteria.destination) {
-      res.status(400).json({ error: "Origin and destination are required." });
+    const parsed = SearchCriteriaSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: parsed.error.issues.map((i) => i.message).join("; "),
+      });
       return;
     }
 
-    if (!criteria.dateRangeStart || !criteria.dateRangeEnd) {
-      res.status(400).json({ error: "Date range is required." });
-      return;
-    }
+    const criteria = parsed.data;
 
     const dateError = validateTravelWindow(
       criteria.dateRangeStart,
@@ -66,11 +76,6 @@ router.post("/search", async (req: Request, res: Response) => {
       ...criteria,
       origin: criteria.origin.toUpperCase(),
       destination: criteria.destination.toUpperCase(),
-      radiusMiles: criteria.radiusMiles ?? 100,
-      passengers: criteria.passengers ?? 1,
-      tripDurationMin: criteria.tripDurationMin ?? 7,
-      tripDurationMax: criteria.tripDurationMax ?? 10,
-      returnTrip: criteria.returnTrip ?? true,
     });
 
     res.json(result);
@@ -81,20 +86,81 @@ router.post("/search", async (req: Request, res: Response) => {
     });
   }
 });
+router.post("/search/stream", async (req: Request, res: Response) => {
+  try {
+    const parsed = SearchCriteriaSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: parsed.error.issues.map((i) => i.message).join("; "),
+      });
+      return;
+    }
+
+    const criteria = parsed.data;
+
+    const dateError = validateTravelWindow(
+      criteria.dateRangeStart,
+      criteria.dateRangeEnd
+    );
+    if (dateError) {
+      res.status(400).json({ error: dateError });
+      return;
+    }
+
+    // Set headers for Server-Sent Events (SSE)
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    const onProgress = (message: string) => {
+      res.write(`data: ${JSON.stringify({ type: "progress", message })}\n\n`);
+    };
+
+    const result = await executeSearch(
+      {
+        ...criteria,
+        origin: criteria.origin.toUpperCase(),
+        destination: criteria.destination.toUpperCase(),
+      },
+      onProgress
+    );
+
+    res.write(`data: ${JSON.stringify({ type: "complete", data: result })}\n\n`);
+    res.end();
+  } catch (err) {
+    console.error("Stream search error:", err);
+    // If headers already sent, we just write an error event
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: err instanceof Error ? err.message : "Internal server error",
+      });
+    } else {
+      res.write(
+        `data: ${JSON.stringify({
+          type: "error",
+          error: err instanceof Error ? err.message : "Internal server error",
+        })}\n\n`
+      );
+      res.end();
+    }
+  }
+});
 
 router.post("/search/estimate", async (req: Request, res: Response) => {
   try {
-    const criteria = req.body as SearchCriteria;
-
-    if (!criteria.destination) {
-      res.status(400).json({ error: "Destination is required." });
+    // Reuse the same schema but make origin optional for estimates
+    const EstimateSchema = SearchCriteriaSchema.extend({
+      origin: z.string().max(4).regex(/^[A-Za-z]*$/).default(""),
+    });
+    const parsed = EstimateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: parsed.error.issues.map((i) => i.message).join("; "),
+      });
       return;
     }
 
-    if (!criteria.dateRangeStart || !criteria.dateRangeEnd) {
-      res.status(400).json({ error: "Date range is required." });
-      return;
-    }
+    const criteria = parsed.data;
 
     const dateError = validateTravelWindow(
       criteria.dateRangeStart,
@@ -107,13 +173,8 @@ router.post("/search/estimate", async (req: Request, res: Response) => {
 
     const result = await estimateSearch({
       ...criteria,
-      origin: criteria.origin?.toUpperCase() ?? "",
+      origin: criteria.origin.toUpperCase(),
       destination: criteria.destination.toUpperCase(),
-      radiusMiles: criteria.radiusMiles ?? 100,
-      passengers: criteria.passengers ?? 1,
-      tripDurationMin: criteria.tripDurationMin ?? 7,
-      tripDurationMax: criteria.tripDurationMax ?? 10,
-      returnTrip: criteria.returnTrip ?? true,
     });
 
     res.json(result);
@@ -127,7 +188,7 @@ router.post("/search/estimate", async (req: Request, res: Response) => {
 
 router.get("/locations", (req: Request, res: Response) => {
   try {
-    const keyword = String(req.query.keyword ?? "");
+    const keyword = String(req.query.keyword ?? "").slice(0, 50);
     if (keyword.length < 2) {
       res.json({ suggestions: [] });
       return;
@@ -145,8 +206,8 @@ router.get("/locations", (req: Request, res: Response) => {
 
 router.get("/airports/nearby", async (req: Request, res: Response) => {
   try {
-    const destination = String(req.query.destination ?? "");
-    const radius = parseInt(String(req.query.radius ?? "100"), 10);
+    const destination = String(req.query.destination ?? "").slice(0, 10);
+    const radius = Math.min(500, Math.max(0, parseInt(String(req.query.radius ?? "100"), 10) || 100));
 
     if (!destination) {
       res.status(400).json({ error: "Destination is required." });
@@ -208,7 +269,7 @@ router.get("/search-flights", async (req: Request, res: Response) => {
     // --- Validate filter_type ---
     if (filterTypeRaw !== "miles" && filterTypeRaw !== "hours") {
       res.status(400).json({
-        error: `Invalid filter_type "${filterTypeRaw}". Must be "miles" or "hours".`,
+        error: `Invalid filter_type. Must be "miles" or "hours".`,
       });
       return;
     }

@@ -1,6 +1,20 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSearch } from "@/context/SearchContext";
+import { Loader2 } from "lucide-react";
 
 export function ResultsSkeleton() {
+  const { searchProgress } = useSearch();
+
+  if (searchProgress) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4 py-24 animate-fade-in">
+        <Loader2 className="h-10 w-10 animate-spin text-primary/80" />
+        <h3 className="text-xl font-medium tracking-tight">Scanning Matrix</h3>
+        <p className="text-muted-foreground animate-pulse">{searchProgress}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">

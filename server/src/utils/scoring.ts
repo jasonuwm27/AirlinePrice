@@ -42,9 +42,13 @@ const BUDGET_CARRIERS = new Set([
 function computePriceScores(flights: ScoredFlightOffer[]): void {
   if (flights.length === 0) return;
 
-  const prices = flights.map((f) => f.price);
-  const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
+  // Use a loop instead of Math.min(...spread) to avoid stack overflow (MED-4)
+  let minPrice = Infinity;
+  let maxPrice = -Infinity;
+  for (const f of flights) {
+    if (f.price < minPrice) minPrice = f.price;
+    if (f.price > maxPrice) maxPrice = f.price;
+  }
   const spread = maxPrice - minPrice;
 
   for (const flight of flights) {
@@ -204,14 +208,18 @@ export function scoreAndRankFlights(
 ): ScoredFlightOffer[] {
   if (flights.length === 0) return [];
 
+  // Shallow-copy each flight to avoid mutating the caller's data (MED-6)
+  const copies = flights.map((f) => ({ ...f }));
+
   // 1. Price scores (relative to batch)
-  computePriceScores(flights);
+  computePriceScores(copies);
 
   // 2. Quality scores + total scores
-  const avgPrice =
-    flights.reduce((sum, f) => sum + f.price, 0) / flights.length;
+  let priceSum = 0;
+  for (const f of copies) priceSum += f.price;
+  const avgPrice = priceSum / copies.length;
 
-  for (const flight of flights) {
+  for (const flight of copies) {
     flight.qualityScore = computeQualityScore(flight);
     flight.totalScore = Math.round(
       PRICE_WEIGHT * flight.priceScore +
@@ -228,14 +236,14 @@ export function scoreAndRankFlights(
     flight.priceVsAverage = computePriceVsAverage(flight.price, avgPrice);
 
     // 5. Confidence
-    flight.confidence = computeConfidence(flights.length, flight);
+    flight.confidence = computeConfidence(copies.length, flight);
 
     // 6. Prediction
     flight.prediction = buildPrediction(flight, flight.totalScore);
   }
 
   // Sort by totalScore descending
-  flights.sort((a, b) => b.totalScore - a.totalScore);
+  copies.sort((a, b) => b.totalScore - a.totalScore);
 
-  return flights.slice(0, maxResults);
+  return copies.slice(0, maxResults);
 }

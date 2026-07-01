@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AlertCircle,
   ArrowRight,
@@ -7,6 +7,7 @@ import {
   Clock,
   Gauge,
   Plane,
+  SearchX,
   Sparkles,
   Timer,
 } from "lucide-react";
@@ -91,7 +92,7 @@ function getAirlineLogos(flight: ScoredFlightOffer): { carrier: string; logo: st
   return Array.from(logos.values()).slice(0, 3);
 }
 
-function FlightRow({
+const FlightRow = React.memo(function FlightRow({
   flight,
   isBestDeal,
 }: {
@@ -112,8 +113,9 @@ function FlightRow({
     <AccordionItem value={flight.id} className="border-b last:border-0">
       <AccordionTrigger className="px-4 py-4 transition-colors hover:bg-muted/30 hover:no-underline">
         <div className="mr-4 flex flex-1 flex-wrap items-center justify-between gap-4">
-          <div className="flex w-full items-center gap-4 sm:w-auto">
-            {airlineLogos.length > 0 && (
+          <div className="flex w-full flex-col items-start gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex items-center gap-4">
+              {airlineLogos.length > 0 && (
               <div className="flex shrink-0 -space-x-2">
                 {airlineLogos.map((item) => (
                   <img
@@ -128,12 +130,15 @@ function FlightRow({
             <div className="flex flex-col items-start gap-1">
               <ScoreBadge score={flight.totalScore} />
               <div className="flex items-center gap-1 text-sm font-medium">
-                <span>{flight.dealEmoji}</span>
-                <span>{flight.dealLabel}</span>
+              <span aria-label={`${flight.dealLabel}`}>
+                <span aria-hidden="true">{flight.dealEmoji}</span>
+                {" "}{flight.dealLabel}
+              </span>
               </div>
             </div>
-            <div className="mx-2 hidden h-10 w-px bg-border sm:block" />
-            <div className="space-y-1 text-left">
+            </div>
+            <div className="hidden h-10 w-px bg-border sm:block" />
+            <div className="space-y-1 text-left mt-2 sm:mt-0">
               <p className="flex items-center gap-2 font-medium">
                 {outbound.segments[0]?.carrier}
                 {outbound.segments.length > 1 && (
@@ -163,7 +168,7 @@ function FlightRow({
             </div>
           </div>
 
-          <div className="flex w-full flex-row items-center justify-between text-right sm:w-auto sm:flex-col sm:items-end sm:justify-center">
+          <div className="mt-1 flex w-full flex-row items-center justify-between border-t border-border pt-3 text-right sm:mt-0 sm:w-auto sm:flex-col sm:items-end sm:justify-center sm:border-0 sm:pt-0">
             <div className="flex items-center gap-2">
               {isBestDeal && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success">
@@ -182,7 +187,7 @@ function FlightRow({
       </AccordionContent>
     </AccordionItem>
   );
-}
+});
 
 function RouteCard({
   route,
@@ -392,9 +397,18 @@ export function ResultsMatrix() {
       </div>
 
       {sortedRoutes.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            No flight results found for this search. Try expanding your date range or radius.
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center py-16 text-center">
+            <SearchX className="mb-4 h-12 w-12 text-muted-foreground/30" />
+            <h3 className="text-lg font-medium">No flights found</h3>
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              We couldn't find flights matching your criteria. Try:
+            </p>
+            <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
+              <li>• Expanding your travel date window</li>
+              <li>• Increasing the airport search radius</li>
+              <li>• Checking a different destination</li>
+            </ul>
           </CardContent>
         </Card>
       ) : (

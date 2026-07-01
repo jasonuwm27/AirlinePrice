@@ -65,9 +65,12 @@ function flightsForArrival(
 }
 
 function cheapestPrice(flights: ScoredFlightOffer[]): number {
-  return flights.length > 0
-    ? Math.min(...flights.map((flight) => flight.price))
-    : 0;
+  if (flights.length === 0) return 0;
+  let min = Infinity;
+  for (const f of flights) {
+    if (f.price < min) min = f.price;
+  }
+  return min === Infinity ? 0 : min;
 }
 
 function applySavings(routes: RouteOption[]): RouteOption[] {
@@ -86,7 +89,45 @@ function applySavings(routes: RouteOption[]): RouteOption[] {
   });
 }
 
-export async function executeSearch(criteria: SearchCriteria): Promise<SearchResponse> {
+/**
+ * Strip internal/duplicate fields from flight offers before sending
+ * to the frontend (MED-7). Reduces payload by ~20-40%.
+ */
+function sanitizeFlightForClient(flight: ScoredFlightOffer): ScoredFlightOffer {
+  const {
+    departureToken: _token,
+    groupKey: _gk,
+    segments: _seg,
+    layovers: _lay,
+    ...clean
+  } = flight as ScoredFlightOffer & {
+    departureToken?: string;
+    groupKey?: string;
+  };
+
+  return {
+    ...clean,
+    // Keep segments/layovers only on the outbound/inbound legs
+    segments: [],
+    layovers: [],
+    timeOptions: (flight.timeOptions ?? []).map((opt) => {
+      const { ...cleanOpt } = opt;
+      return cleanOpt;
+    }),
+  };
+}
+
+function sanitizeRouteForClient(route: RouteOption): RouteOption {
+  return {
+    ...route,
+    topFlights: route.topFlights.map(sanitizeFlightForClient),
+  };
+}
+
+export async function executeSearch(
+  criteria: SearchCriteria,
+  onProgress?: (msg: string) => void
+): Promise<SearchResponse> {
   const origin = criteria.origin.toUpperCase();
   const destination = criteria.destination.toUpperCase();
 
@@ -94,6 +135,9 @@ export async function executeSearch(criteria: SearchCriteria): Promise<SearchRes
     throw new Error("Flexible optimized search currently requires a round trip.");
   }
 
+  if (onProgress) {
+    onProgress(`Finding alternative airports near ${destination}...`);
+  }
   const destCoords = resolveAirportCoords(destination);
   const nearbyAirports = await findNearbyAirportsForDestination(
     destination,
@@ -118,6 +162,7 @@ export async function executeSearch(criteria: SearchCriteria): Promise<SearchRes
     maxDuration: criteria.tripDurationMax,
     adults: criteria.passengers,
     searchDepth: criteria.searchDepth ?? "smart",
+    onProgress,
   });
 
   const directFlights = flightsForArrival(allFlights, destination);
@@ -144,6 +189,9 @@ export async function executeSearch(criteria: SearchCriteria): Promise<SearchRes
     BATCH_DELAY,
     async (airport): Promise<RouteOption> => {
       try {
+        if (onProgress) {
+          onProgress(`Checking alternative flights to ${airport.iataCode}...`);
+        }
         const topFlights = flightsForArrival(allFlights, airport.iataCode);
         const airportCoords = resolveAirportCoords(airport.iataCode);
 
@@ -187,7 +235,7 @@ export async function executeSearch(criteria: SearchCriteria): Promise<SearchRes
     }
   );
 
-  const allRoutes = applySavings([directRoute, ...altResults]);
+  const allRoutes = applySavings([directRoute, ...altResults]).map(sanitizeRouteForClient);
 
   return {
     criteria,

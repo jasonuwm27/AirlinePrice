@@ -60,8 +60,19 @@ interface CacheEntry {
 }
 
 const responseCache = new Map<string, CacheEntry>();
+const MAX_CACHE_ENTRIES = 500;
 
-function getApiKey(): string {
+// Periodic cache cleanup — evict expired entries every 10 minutes (HIGH-1)
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of responseCache) {
+    if (entry.expiresAt <= now) {
+      responseCache.delete(key);
+    }
+  }
+}, 10 * 60 * 1000).unref();
+
+export function getApiKey(): string {
   const key = process.env.SERPAPI_API_KEY;
   if (!key) {
     throw new Error(
@@ -71,10 +82,10 @@ function getApiKey(): string {
   return key;
 }
 
-function sanitizeIata(value: string): string {
+export function sanitizeIata(value: string): string {
   const sanitized = value.toUpperCase().replace(/[^A-Z]/g, "");
   if (!/^[A-Z]{3}$/.test(sanitized)) {
-    throw new Error(`Invalid airport code "${value}". Expected a 3-letter IATA code.`);
+    throw new Error(`Invalid airport code. Expected a 3-letter IATA code.`);
   }
   return sanitized;
 }
@@ -90,11 +101,11 @@ export function buildMultiAirportString(
   return sanitizeIataList(values).slice(0, maxAirports).join(",");
 }
 
-function getFlightResults(data: SerpApiFlightsResponse): SerpApiFlightResult[] {
+export function getFlightResults(data: SerpApiFlightsResponse): SerpApiFlightResult[] {
   return [...(data.best_flights ?? []), ...(data.other_flights ?? [])];
 }
 
-function buildUrl(queryParams: Record<string, string>): string {
+export function buildSerpApiUrl(queryParams: Record<string, string>): string {
   const url = new URL(SERPAPI_BASE);
   for (const [key, value] of Object.entries(queryParams)) {
     url.searchParams.set(key, value);
@@ -116,7 +127,7 @@ function cacheKey(queryParams: Record<string, string>): string {
   return `FLIGHTS_${departure}_${arrival}_${outbound}_${returnDate}`;
 }
 
-async function fetchSerpApi(
+export async function fetchSerpApi(
   queryParams: Record<string, string>
 ): Promise<SerpApiFlightsResponse> {
   const key = cacheKey(queryParams);
@@ -125,11 +136,18 @@ async function fetchSerpApi(
     return cached.data;
   }
 
-  const res = await fetch(buildUrl(queryParams));
+  const res = await fetch(buildSerpApiUrl(queryParams));
+
+  // ── HTTP 429 — SerpAPI rate limit (HIGH-5) ──
+  if (res.status === 429) {
+    throw new Error(
+      "SerpAPI rate limit reached. Please wait a few minutes and try again."
+    );
+  }
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`SerpAPI request failed: ${res.status} ${text}`);
+    throw new Error(`SerpAPI request failed: ${res.status} ${text.slice(0, 300)}`);
   }
 
   const data = (await res.json()) as SerpApiFlightsResponse;
@@ -140,6 +158,12 @@ async function fetchSerpApi(
 
   if (data.search_metadata?.status === "Error") {
     throw new Error(data.search_metadata?.json_endpoint ?? "SerpAPI search failed");
+  }
+
+  // ── Cache with eviction cap (HIGH-1) ──
+  if (responseCache.size >= MAX_CACHE_ENTRIES) {
+    const oldestKey = responseCache.keys().next().value;
+    if (oldestKey) responseCache.delete(oldestKey);
   }
 
   responseCache.set(key, {
@@ -245,7 +269,8 @@ async function hydrateRoundTripOffer(
       confidence: flight.confidence,
       prediction: flight.prediction,
     };
-  } catch {
+  } catch (err) {
+    console.warn(`Hydrate round-trip failed for ${flight.departureDate}:`, err);
     return flight;
   }
 }
@@ -430,15 +455,23 @@ async function scanDatePairs(params: {
   destinations: string[];
   datePairs: DatePair[];
   adults: number;
+  onProgress?: (msg: string) => void;
 }): Promise<ScoredFlightOffer[]> {
   const destinations = sanitizeIataList(params.destinations);
   const origins = sanitizeIataList(params.origins);
+
+  let scannedCount = 0;
+  const totalCount = params.datePairs.length;
 
   const batches = await runLimited(
     params.datePairs,
     Math.max(1, MAX_DATE_PAIR_CONCURRENT),
     async (datePair) => {
       try {
+        if (params.onProgress) {
+          scannedCount++;
+          params.onProgress(`Scanning date pair ${scannedCount} of ${totalCount}...`);
+        }
         return await scanFlightOffersForDatePair({
           origins,
           destinations,
@@ -446,7 +479,8 @@ async function scanDatePairs(params: {
           returnDate: datePair.returnDate,
           adults: params.adults,
         });
-      } catch {
+      } catch (err) {
+        console.warn(`Date pair scan failed for ${datePair.departureDate}-${datePair.returnDate}:`, err);
         return [];
       }
     }
@@ -463,6 +497,7 @@ async function searchSmartAnchorDrillDown(params: {
   minDuration: number;
   maxDuration: number;
   adults: number;
+  onProgress?: (msg: string) => void;
 }): Promise<ScoredFlightOffer[]> {
   const anchorPairs = generateAnchorDatePairs({
     startDate: params.startDate,
@@ -477,10 +512,11 @@ async function searchSmartAnchorDrillDown(params: {
     destinations: params.destinations,
     datePairs: anchorPairs,
     adults: params.adults,
+    onProgress: params.onProgress,
   });
   const anchorDepartureDate = cheapestDepartureDate(anchorFlights);
 
-  if (!anchorDepartureDate) return groupAndHydrate(anchorFlights, params.adults);
+  if (!anchorDepartureDate) return groupAndHydrate(anchorFlights, params.adults, 1, params.onProgress);
 
   const densePairs = generateDenseDatePairsAroundAnchor({
     startDate: params.startDate,
@@ -501,20 +537,25 @@ async function searchSmartAnchorDrillDown(params: {
     destinations: params.destinations,
     datePairs: incrementalDensePairs,
     adults: params.adults,
+    onProgress: params.onProgress,
   });
 
-  return groupAndHydrate([...anchorFlights, ...denseFlights], params.adults);
+  return groupAndHydrate([...anchorFlights, ...denseFlights], params.adults, 1, params.onProgress);
 }
 
 async function groupAndHydrate(
   scannedFlights: ScoredFlightOffer[],
   adults: number,
-  resultMultiplier = 1
+  resultMultiplier = 1,
+  onProgress?: (msg: string) => void
 ): Promise<ScoredFlightOffer[]> {
   const grouped = groupAndScoreFlights(
     scannedFlights,
     MAX_RESULTS * Math.max(1, resultMultiplier)
   );
+  if (onProgress && grouped.length > 0) {
+    onProgress("Fetching detailed itineraries for top flights...");
+  }
   const hydrated = await runLimited(
     grouped.slice(0, MAX_DETAIL_HYDRATIONS),
     Math.max(1, MAX_DETAIL_CONCURRENT),
@@ -534,6 +575,7 @@ export async function searchFlightMatrixOffers(params: {
   maxDuration: number;
   adults: number;
   searchDepth?: "smart" | "expanded" | "full";
+  onProgress?: (msg: string) => void;
 }): Promise<ScoredFlightOffer[]> {
   const origins = sanitizeIataList(params.origins ?? [params.origin ?? ""]);
 
@@ -546,6 +588,7 @@ export async function searchFlightMatrixOffers(params: {
       minDuration: params.minDuration,
       maxDuration: params.maxDuration,
       adults: params.adults,
+      onProgress: params.onProgress,
     });
   }
 
@@ -557,12 +600,11 @@ export async function searchFlightMatrixOffers(params: {
     searchDepth: params.searchDepth,
   });
 
-  const scannedFlights = await scanDatePairs({
+  return scanDatePairs({
     origins,
     destinations: params.destinations,
     datePairs,
     adults: params.adults,
-  });
-
-  return groupAndHydrate(scannedFlights, params.adults, params.destinations.length);
+    onProgress: params.onProgress,
+  }).then((flights) => groupAndHydrate(flights, params.adults, params.destinations.length, params.onProgress));
 }

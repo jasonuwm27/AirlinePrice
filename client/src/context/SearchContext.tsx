@@ -20,6 +20,7 @@ interface SearchContextValue {
   error: string | null;
   sortBy: SortOption;
   setSortBy: (sort: SortOption) => void;
+  searchProgress: string | null;
   executeSearch: () => Promise<void>;
 }
 
@@ -51,6 +52,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("cheapest");
+  const [searchProgress, setSearchProgress] = useState<string | null>(null);
 
   const setCriteria = useCallback((partial: Partial<SearchCriteria>) => {
     setCriteriaState((prev) => ({ ...prev, ...partial }));
@@ -77,15 +79,19 @@ export function SearchProvider({ children }: { children: ReactNode }) {
 
     setIsLoading(true);
     setError(null);
+    setSearchProgress("Initializing search...");
 
     try {
-      const response = await searchFlights(criteria);
+      const response = await searchFlights(criteria, (msg) => {
+        setSearchProgress(msg);
+      });
       setResults(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed. Please try again.");
       setResults(null);
     } finally {
       setIsLoading(false);
+      setSearchProgress(null);
     }
   }, [criteria]);
 
@@ -104,9 +110,10 @@ export function SearchProvider({ children }: { children: ReactNode }) {
       error,
       sortBy,
       setSortBy,
+      searchProgress,
       executeSearch,
     }),
-    [criteria, setCriteria, results, sortedRoutes, isLoading, error, sortBy, executeSearch]
+    [criteria, setCriteria, results, sortedRoutes, isLoading, error, sortBy, searchProgress, executeSearch]
   );
 
   return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;
