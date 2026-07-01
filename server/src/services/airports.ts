@@ -9,13 +9,33 @@ const byIata = new Map(airports.map((a) => [a.iata.toUpperCase(), a]));
 export function searchLocations(keyword: string): LocationSuggestion[] {
   const q = keyword.trim().toLowerCase();
 
-  return airports
-    .filter(
-      (a) =>
-        a.iata.toLowerCase().includes(q) ||
-        a.name.toLowerCase().includes(q) ||
-        a.city.toLowerCase().includes(q)
-    )
+  const matched = airports.filter(
+    (a) =>
+      (a.iata && a.iata.toLowerCase().includes(q)) ||
+      (a.name && a.name.toLowerCase().includes(q)) ||
+      (a.city && a.city.toLowerCase().includes(q))
+  );
+
+  matched.sort((a, b) => {
+    // Exact IATA match
+    const aExactIata = a.iata && a.iata.toLowerCase() === q ? 1 : 0;
+    const bExactIata = b.iata && b.iata.toLowerCase() === q ? 1 : 0;
+    if (aExactIata !== bExactIata) return bExactIata - aExactIata;
+
+    // Starts with IATA
+    const aStartsIata = a.iata && a.iata.toLowerCase().startsWith(q) ? 1 : 0;
+    const bStartsIata = b.iata && b.iata.toLowerCase().startsWith(q) ? 1 : 0;
+    if (aStartsIata !== bStartsIata) return bStartsIata - aStartsIata;
+
+    // Starts with City
+    const aStartsCity = a.city && a.city.toLowerCase().startsWith(q) ? 1 : 0;
+    const bStartsCity = b.city && b.city.toLowerCase().startsWith(q) ? 1 : 0;
+    if (aStartsCity !== bStartsCity) return bStartsCity - aStartsCity;
+
+    return 0;
+  });
+
+  return matched
     .slice(0, 10)
     .map((a) => ({
       iataCode: a.iata,

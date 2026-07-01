@@ -190,6 +190,8 @@ export function SearchPanel() {
             label="To (Final Destination)"
             value={criteria.destination}
             placeholder="e.g. MIA, ORD"
+
+
             onChange={(code) => setCriteria({ destination: code })}
           />
         </div>
@@ -202,7 +204,7 @@ export function SearchPanel() {
           }
         />
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3 items-end">
           <div className="space-y-2">
             <Label>Trip Duration (days)</Label>
             <div className="flex items-center gap-2">
@@ -229,7 +231,7 @@ export function SearchPanel() {
           </div>
 
           <div className="space-y-2">
-            <Label className="flex items-center gap-2">
+            <Label className="flex items-center gap-2 justify-center w-full">
               <Users className="h-4 w-4" />
               Passengers
             </Label>
@@ -237,7 +239,7 @@ export function SearchPanel() {
               value={String(criteria.passengers)}
               onValueChange={(v) => setCriteria({ passengers: Number(v) })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full justify-center">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
