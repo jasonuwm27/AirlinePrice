@@ -16,7 +16,32 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useSearch } from "@/context/SearchContext";
 import { estimateSearchCredits, suggestLocations } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import type { LocationSuggestion, SearchEstimate } from "@/types";
+
+function isIataCode(value: string): boolean {
+  return /^[A-Z]{3}$/.test(value.trim().toUpperCase());
+}
+
+function getEstimateBlocker(criteria: ReturnType<typeof useSearch>["criteria"]): string | null {
+  if (!criteria.destination) return null;
+  if (!isIataCode(criteria.destination)) {
+    return "Choose a valid destination airport from the suggestions to estimate credits.";
+  }
+  if (!criteria.dateRangeStart || !criteria.dateRangeEnd) return null;
+  if (criteria.dateRangeStart > criteria.dateRangeEnd) {
+    return "Choose a start date before the end date to estimate credits.";
+  }
+  if (
+    !Number.isFinite(criteria.tripDurationMin) ||
+    !Number.isFinite(criteria.tripDurationMax) ||
+    criteria.tripDurationMin < 1 ||
+    criteria.tripDurationMax < 1
+  ) {
+    return "Trip duration must be at least 1 day.";
+  }
+  return null;
+}
 
 function AirportInput({
   id,
@@ -110,15 +135,19 @@ function AirportInput({
 export function SearchPanel() {
   const { criteria, setCriteria, executeSearch, isLoading } = useSearch();
   const [estimate, setEstimate] = useState<SearchEstimate | null>(null);
+  const [estimateError, setEstimateError] = useState<string | null>(null);
+  const isOneWay = !criteria.returnTrip;
 
   useEffect(() => {
+    const blocker = getEstimateBlocker(criteria);
     if (
+      blocker ||
       !criteria.destination ||
       !criteria.dateRangeStart ||
-      !criteria.dateRangeEnd ||
-      !criteria.returnTrip
+      !criteria.dateRangeEnd
     ) {
-      setEstimate(null);
+      if (blocker) setEstimate(null);
+      setEstimateError(blocker);
       return;
     }
 
@@ -126,9 +155,23 @@ export function SearchPanel() {
     const timer = setTimeout(async () => {
       try {
         const nextEstimate = await estimateSearchCredits(criteria);
-        if (!cancelled) setEstimate(nextEstimate);
-      } catch {
-        if (!cancelled) setEstimate(null);
+        if (!cancelled) {
+          setEstimate(nextEstimate);
+          setEstimateError(
+            nextEstimate.possibleDatePairCount === 0
+              ? criteria.returnTrip
+                ? "No valid round trips fit inside this date window and duration range."
+                : "No valid departure dates fit inside this travel window."
+              : null
+          );
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setEstimate(null);
+          setEstimateError(
+            err instanceof Error ? err.message : "Could not estimate credits."
+          );
+        }
       }
     }, 400);
 
@@ -153,6 +196,11 @@ export function SearchPanel() {
   };
   const allDatePairsSelected =
     estimate && estimate.datePairCount >= estimate.possibleDatePairCount;
+  const estimateUnitLabel = criteria.returnTrip ? "date pairs" : "departure dates";
+  const detailCreditLabel =
+    estimate && estimate.detailCredits > 0
+      ? ` + ${estimate.detailCredits} itinerary detail calls`
+      : "";
   const coverageNote =
     criteria.searchDepth === "smart"
       ? " Smart uses anchor dates first, then drills into the cheapest local window."
@@ -199,36 +247,53 @@ export function SearchPanel() {
         <DateRangeSelector
           startDate={criteria.dateRangeStart}
           endDate={criteria.dateRangeEnd}
+          mode={isOneWay ? "single" : "range"}
           onChange={(start, end) =>
-            setCriteria({ dateRangeStart: start, dateRangeEnd: end })
+            setCriteria({
+              dateRangeStart: start,
+              dateRangeEnd: isOneWay ? start : end,
+            })
           }
         />
 
-        <div className="grid gap-4 sm:grid-cols-3 items-end">
-          <div className="space-y-2">
-            <Label>Trip Duration (days)</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                min={1}
-                max={30}
-                value={criteria.tripDurationMin}
-                onChange={(e) =>
-                  setCriteria({ tripDurationMin: Number(e.target.value) })
-                }
-              />
-              <span className="text-muted-foreground">to</span>
-              <Input
-                type="number"
-                min={1}
-                max={30}
-                value={criteria.tripDurationMax}
-                onChange={(e) =>
-                  setCriteria({ tripDurationMax: Number(e.target.value) })
-                }
-              />
+        <div
+          className={cn(
+            "grid gap-4 items-end",
+            isOneWay ? "sm:grid-cols-2" : "sm:grid-cols-3"
+          )}
+        >
+          {!isOneWay && (
+            <div className="space-y-2">
+              <Label>Trip Duration (days)</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min={1}
+                  max={30}
+                  value={criteria.tripDurationMin}
+                  onChange={(e) =>
+                    setCriteria({
+                      tripDurationMin:
+                        e.target.value === "" ? 1 : Number(e.target.value),
+                    })
+                  }
+                />
+                <span className="text-muted-foreground">to</span>
+                <Input
+                  type="number"
+                  min={1}
+                  max={30}
+                  value={criteria.tripDurationMax}
+                  onChange={(e) =>
+                    setCriteria({
+                      tripDurationMax:
+                        e.target.value === "" ? 1 : Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label className="flex items-center gap-2 justify-center w-full">
@@ -256,7 +321,14 @@ export function SearchPanel() {
             <Label>Trip Type</Label>
             <Select
               value={criteria.returnTrip ? "roundtrip" : "oneway"}
-              onValueChange={(v) => setCriteria({ returnTrip: v === "roundtrip" })}
+              onValueChange={(v) =>
+                setCriteria({
+                  returnTrip: v === "roundtrip",
+                  ...(v === "oneway" && criteria.dateRangeStart
+                    ? { dateRangeEnd: criteria.dateRangeStart }
+                    : {}),
+                })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -274,49 +346,56 @@ export function SearchPanel() {
           onChange={(miles) => setCriteria({ radiusMiles: miles })}
         />
 
-        <div className="space-y-2">
-          <Label>Search Coverage</Label>
-          <ToggleGroup
-            value={criteria.searchDepth ?? "smart"}
-            onValueChange={(value) => {
-              if (!value) return;
-              setCriteria({
-                searchDepth: value as "smart" | "expanded" | "full",
-              });
-            }}
-            className="grid grid-cols-3 gap-2"
-          >
-            <ToggleGroupItem value="smart" className="w-full">
-              Smart
-            </ToggleGroupItem>
-            <ToggleGroupItem value="expanded" className="w-full">
-              Expanded
-            </ToggleGroupItem>
-            <ToggleGroupItem value="full" className="w-full">
-              Full
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
+        {!isOneWay && (
+          <div className="space-y-2">
+            <Label>Search Coverage</Label>
+            <ToggleGroup
+              value={criteria.searchDepth ?? "smart"}
+              onValueChange={(value) => {
+                if (!value) return;
+                setCriteria({
+                  searchDepth: value as "smart" | "expanded" | "full",
+                });
+              }}
+              className="grid grid-cols-3 gap-2"
+            >
+              <ToggleGroupItem value="smart" className="w-full">
+                Smart
+              </ToggleGroupItem>
+              <ToggleGroupItem value="expanded" className="w-full">
+                Expanded
+              </ToggleGroupItem>
+              <ToggleGroupItem value="full" className="w-full">
+                Full
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+        )}
 
-        {estimate && (
+        {(estimate || estimateError) && (
           <div className="flex items-start gap-2 rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <p>
-              Estimated SerpAPI use: up to{" "}
-              <span className="font-medium text-foreground">
-                {estimate.maxCredits} credits
-              </span>{" "}
-              ({estimate.scanCredits} matrix scans + {estimate.detailCredits} itinerary detail calls).
-              Searching{" "}
-              <span className="font-medium text-foreground">
-                {estimate.datePairCount} of {estimate.possibleDatePairCount}
-              </span>{" "}
-              possible date pairs across{" "}
-              {estimate.routeTargetCount} airport target
-              {estimate.routeTargetCount === 1 ? "" : "s"} with one multi-airport query per date pair.
-              {!allDatePairsSelected && coverageNote}
-              {!allDatePairsSelected && " Use Expanded or Full to cover more dates."}
-            </p>
+            {estimate ? (
+              <p>
+                Estimated SerpAPI use: up to{" "}
+                <span className="font-medium text-foreground">
+                  {estimate.maxCredits} credits
+                </span>{" "}
+                ({estimate.scanCredits} {criteria.returnTrip ? "matrix" : "one-way"} scans{detailCreditLabel}).
+                Searching{" "}
+                <span className="font-medium text-foreground">
+                  {estimate.datePairCount} of {estimate.possibleDatePairCount}
+                </span>{" "}
+                possible {estimateUnitLabel} across{" "}
+                {estimate.routeTargetCount} airport target
+                {estimate.routeTargetCount === 1 ? "" : "s"} with one multi-airport query per search unit.
+                {!allDatePairsSelected && coverageNote}
+                {!allDatePairsSelected && " Use Expanded or Full to cover more dates."}
+                {estimateError && ` ${estimateError}`}
+              </p>
+            ) : (
+              <p>{estimateError}</p>
+            )}
           </div>
         )}
 

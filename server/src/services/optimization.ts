@@ -4,7 +4,9 @@ import {
 } from "./airports.js";
 import {
   buildDateMatrixPlan,
+  buildOneWayDatePlan,
   estimateSerpApiCredits,
+  maxIataPerSerpApiParam,
   searchFlightMatrixOffers,
 } from "./serpapi.js";
 import {
@@ -24,6 +26,7 @@ import {
 } from "../utils/geo.js";
 
 const MAX_ALTERNATIVES = 5;
+const MAX_SERPAPI_TARGETS = maxIataPerSerpApiParam();
 const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_SEARCHES ?? "3", 10);
 const BATCH_DELAY = parseInt(process.env.API_BATCH_DELAY_MS ?? "500", 10);
 
@@ -151,7 +154,10 @@ export async function executeSearch(
   const targetAirportCodes = [
     destination,
     ...alternativeTargets.map((airport) => airport.iataCode),
-  ];
+  ].slice(0, MAX_SERPAPI_TARGETS);
+  const searchedAlternativeTargets = alternativeTargets.filter((airport) =>
+    targetAirportCodes.includes(airport.iataCode)
+  );
 
   const allFlights = await searchFlightMatrixOffers({
     origin,
@@ -184,7 +190,7 @@ export async function executeSearch(
   });
 
   const altResults = await runWithConcurrency(
-    alternativeTargets,
+    searchedAlternativeTargets,
     MAX_CONCURRENT,
     BATCH_DELAY,
     async (airport): Promise<RouteOption> => {
@@ -267,26 +273,40 @@ export async function estimateSearch(criteria: SearchCriteria): Promise<{
   const alternativeTargets = nearbyAirports.filter(
     (ap) => ap.iataCode !== destination
   );
-  const dateMatrixPlan = buildDateMatrixPlan({
-    startDate: criteria.dateRangeStart,
-    endDate: criteria.dateRangeEnd,
-    minDuration: criteria.tripDurationMin,
-    maxDuration: criteria.tripDurationMax,
-    searchDepth: criteria.searchDepth ?? "smart",
-  });
-  const credits = estimateSerpApiCredits({
-    routeTargetCount: 1 + alternativeTargets.length,
-    datePairCount:
-      dateMatrixPlan.estimatedQueryCount ?? dateMatrixPlan.selectedPairs.length,
-    useMultiAirport: true,
-  });
+  const routeTargetCount = Math.min(
+    MAX_SERPAPI_TARGETS,
+    1 + alternativeTargets.length
+  );
+  const dateMatrixPlan = criteria.returnTrip
+    ? buildDateMatrixPlan({
+        startDate: criteria.dateRangeStart,
+        endDate: criteria.dateRangeEnd,
+        minDuration: criteria.tripDurationMin,
+        maxDuration: criteria.tripDurationMax,
+        searchDepth: criteria.searchDepth ?? "smart",
+      })
+    : buildOneWayDatePlan({
+        startDate: criteria.dateRangeStart,
+        endDate: criteria.dateRangeEnd,
+        searchDepth: criteria.searchDepth ?? "smart",
+      });
   const estimatedDatePairCount =
     dateMatrixPlan.estimatedQueryCount ?? dateMatrixPlan.selectedPairs.length;
+  const datePairCount = Math.min(
+    estimatedDatePairCount,
+    dateMatrixPlan.totalPairs
+  );
+  const credits = estimateSerpApiCredits({
+    routeTargetCount,
+    datePairCount,
+    useMultiAirport: true,
+    includeDetailCredits: criteria.returnTrip,
+  });
   return {
-    datePairCount: Math.min(estimatedDatePairCount, dateMatrixPlan.totalPairs),
+    datePairCount,
     possibleDatePairCount: dateMatrixPlan.totalPairs,
-    routeTargetCount: 1 + alternativeTargets.length,
-    cappedDatePairs: estimatedDatePairCount < dateMatrixPlan.totalPairs,
+    routeTargetCount,
+    cappedDatePairs: datePairCount < dateMatrixPlan.totalPairs,
     ...credits,
   };
 }

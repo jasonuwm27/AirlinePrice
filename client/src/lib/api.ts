@@ -86,9 +86,10 @@ export async function searchFlights(
 export async function estimateSearchCredits(
   criteria: SearchCriteria
 ): Promise<SearchEstimate> {
+  const origin = /^[A-Z]{3}$/.test(criteria.origin) ? criteria.origin : "";
   return fetchJson<SearchEstimate>(`${API_BASE}/search/estimate`, {
     method: "POST",
-    body: JSON.stringify(criteria),
+    body: JSON.stringify({ ...criteria, origin }),
   });
 }
 

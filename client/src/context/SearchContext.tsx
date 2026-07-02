@@ -26,6 +26,60 @@ interface SearchContextValue {
 
 const SearchContext = createContext<SearchContextValue | null>(null);
 
+function clampInteger(value: unknown, min: number, max: number, fallback: number): number {
+  const numeric = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.min(max, Math.max(min, Math.floor(numeric)));
+}
+
+function normalizeCriteriaUpdate(
+  previous: SearchCriteria,
+  partial: Partial<SearchCriteria>
+): SearchCriteria {
+  const next: SearchCriteria = { ...previous, ...partial };
+
+  next.tripDurationMin = clampInteger(
+    next.tripDurationMin,
+    1,
+    90,
+    previous.tripDurationMin
+  );
+  next.tripDurationMax = clampInteger(
+    next.tripDurationMax,
+    1,
+    90,
+    previous.tripDurationMax
+  );
+
+  if (
+    partial.tripDurationMin !== undefined &&
+    partial.tripDurationMax === undefined &&
+    next.tripDurationMin > next.tripDurationMax
+  ) {
+    next.tripDurationMax = next.tripDurationMin;
+  } else if (
+    partial.tripDurationMax !== undefined &&
+    partial.tripDurationMin === undefined &&
+    next.tripDurationMax < next.tripDurationMin
+  ) {
+    next.tripDurationMin = next.tripDurationMax;
+  } else if (next.tripDurationMin > next.tripDurationMax) {
+    [next.tripDurationMin, next.tripDurationMax] = [
+      next.tripDurationMax,
+      next.tripDurationMin,
+    ];
+  }
+
+  next.passengers = clampInteger(next.passengers, 1, 9, previous.passengers);
+  next.radiusMiles = clampInteger(next.radiusMiles, 0, 500, previous.radiusMiles);
+
+  if (!next.returnTrip && next.dateRangeStart) {
+    next.dateRangeEnd = next.dateRangeStart;
+  }
+
+  return next;
+}
+
 function sortRoutes(routes: RouteOption[], sortBy: SortOption): RouteOption[] {
   const copy = [...routes];
   switch (sortBy) {
@@ -55,7 +109,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const [searchProgress, setSearchProgress] = useState<string | null>(null);
 
   const setCriteria = useCallback((partial: Partial<SearchCriteria>) => {
-    setCriteriaState((prev) => ({ ...prev, ...partial }));
+    setCriteriaState((prev) => normalizeCriteriaUpdate(prev, partial));
   }, []);
 
   const executeSearch = useCallback(async () => {

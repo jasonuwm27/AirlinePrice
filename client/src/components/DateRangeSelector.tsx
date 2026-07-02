@@ -17,6 +17,7 @@ import {
 interface DateRangeSelectorProps {
   startDate: string;
   endDate: string;
+  mode?: "range" | "single";
   onChange: (start: string, end: string) => void;
 }
 
@@ -140,14 +141,20 @@ function DateButton({
 export function DateRangeSelector({
   startDate,
   endDate,
+  mode = "range",
   onChange,
 }: DateRangeSelectorProps) {
+  const isSingle = mode === "single";
   const today = useMemo(() => parseIsoDateLocal(todayIsoDate()) ?? new Date(), []);
   const selectedStart = startDate ? parseIsoDateLocal(startDate) : null;
   const endDisabledBefore = selectedStart && selectedStart > today ? selectedStart : today;
 
   const selectStart = (date: Date) => {
     const nextStart = formatIsoDateLocal(date);
+    if (isSingle) {
+      onChange(nextStart, nextStart);
+      return;
+    }
     const nextEnd =
       endDate && compareIsoDates(endDate, nextStart) >= 0 ? endDate : nextStart;
     onChange(nextStart, nextEnd);
@@ -161,27 +168,25 @@ export function DateRangeSelector({
   };
 
   return (
-    <div className="space-y-2">
-      <Label>Travel Window</Label>
+    <div className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <DateButton
-          label="Start Date"
+          label={isSingle ? "Flight Date" : "Start Date"}
           value={startDate}
-          placeholder="Select start"
+          placeholder={isSingle ? "Select flight date" : "Select start"}
           disabledBefore={today}
           onSelect={selectStart}
         />
-        <DateButton
-          label="End Date"
-          value={endDate}
-          placeholder="Select end"
-          disabledBefore={endDisabledBefore}
-          onSelect={selectEnd}
-        />
+        {!isSingle && (
+          <DateButton
+            label="End Date"
+            value={endDate}
+            placeholder="Select end"
+            disabledBefore={endDisabledBefore}
+            onSelect={selectEnd}
+          />
+        )}
       </div>
-      <p className="text-xs text-muted-foreground">
-        Select a current or future departure window. Past dates are disabled.
-      </p>
     </div>
   );
 }

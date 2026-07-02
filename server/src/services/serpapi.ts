@@ -17,11 +17,14 @@ import {
   mapSerpApiResults,
 } from "./flightMapper.js";
 import {
+  addDays,
+  formatIsoDate,
   generateAnchorDatePairs,
   generateDenseDatePairsAroundAnchor,
   generateDateMatrix,
   generateDateMatrixResult,
   generateSparseGridDatePairs,
+  parseIsoDate,
   type DateMatrixResult,
   type DatePair,
 } from "../utils/dateMatrix.js";
@@ -99,6 +102,10 @@ export function buildMultiAirportString(
   maxAirports = MAX_IATA_PER_PARAM
 ): string {
   return sanitizeIataList(values).slice(0, maxAirports).join(",");
+}
+
+export function maxIataPerSerpApiParam(): number {
+  return MAX_IATA_PER_PARAM;
 }
 
 export function getFlightResults(data: SerpApiFlightsResponse): SerpApiFlightResult[] {
@@ -367,6 +374,52 @@ export function buildDateMatrixPlan(params: {
   });
 }
 
+export function buildOneWayDatePlan(params: {
+  startDate: string;
+  endDate: string;
+  searchDepth?: "smart" | "expanded" | "full";
+}): DateMatrixResult {
+  const today = parseIsoDate(new Date().toISOString().slice(0, 10));
+  const start = new Date(
+    Math.max(parseIsoDate(params.startDate).getTime(), today.getTime())
+  );
+  const end = parseIsoDate(params.endDate);
+
+  if (end < start) {
+    return { allPairs: [], selectedPairs: [], totalPairs: 0 };
+  }
+
+  const allPairs: DatePair[] = [];
+  for (let date = start; date <= end; date = addDays(date, 1)) {
+    const departureDate = formatIsoDate(date);
+    allPairs.push({
+      departureDate,
+      returnDate: "",
+      tripDurationDays: 0,
+    });
+  }
+
+  const depth = params.searchDepth ?? "smart";
+  const maxPairs =
+    depth === "full"
+      ? Number.POSITIVE_INFINITY
+      : depth === "expanded"
+        ? Math.min(EXPANDED_MAX_DATE_PAIRS, 40)
+        : MAX_DATE_PAIRS;
+  const step = depth === "smart" ? 4 : depth === "expanded" ? 2 : 1;
+  const steppedPairs = allPairs.filter((_, index) => index % step === 0);
+  const selectedPairs =
+    Number.isFinite(maxPairs) && steppedPairs.length > maxPairs
+      ? steppedPairs.slice(0, maxPairs)
+      : steppedPairs;
+
+  return {
+    allPairs,
+    selectedPairs,
+    totalPairs: allPairs.length,
+  };
+}
+
 function maxDatePairsForDepth(depth: "smart" | "expanded" | "full" = "smart"): number {
   if (depth === "full") return Number.POSITIVE_INFINITY;
   if (depth === "expanded") return EXPANDED_MAX_DATE_PAIRS;
@@ -377,6 +430,7 @@ export function estimateSerpApiCredits(params: {
   routeTargetCount: number;
   datePairCount: number;
   useMultiAirport?: boolean;
+  includeDetailCredits?: boolean;
 }): {
   scanCredits: number;
   detailCredits: number;
@@ -386,7 +440,10 @@ export function estimateSerpApiCredits(params: {
     ? Math.max(1, params.routeTargetCount)
     : 1;
   const scanCredits = params.datePairCount * routeMultiplier;
-  const detailCredits = Math.min(MAX_DETAIL_HYDRATIONS, MAX_RESULTS);
+  const detailCredits =
+    params.includeDetailCredits !== false && params.datePairCount > 0
+      ? Math.min(MAX_DETAIL_HYDRATIONS, MAX_RESULTS)
+      : 0;
 
   return {
     scanCredits,

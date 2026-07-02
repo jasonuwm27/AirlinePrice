@@ -62,7 +62,8 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-app.use("/api/search", searchLimiter);
+app.post("/api/search", searchLimiter);
+app.post("/api/search/stream", searchLimiter);
 app.use("/api", searchRoutes);
 
 app.listen(PORT, () => {
