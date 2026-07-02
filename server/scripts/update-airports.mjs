@@ -4,6 +4,16 @@ import { fileURLToPath } from "node:url";
 
 const AIRPORTS_URL = "https://davidmegginson.github.io/ourairports-data/airports.csv";
 const COUNTRIES_URL = "https://davidmegginson.github.io/ourairports-data/countries.csv";
+const INCLUDED_AIRPORT_TYPES = new Set([
+  "large_airport",
+  "medium_airport",
+  "small_airport",
+]);
+const TYPE_RANK = new Map([
+  ["large_airport", 3],
+  ["medium_airport", 2],
+  ["small_airport", 1],
+]);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outputPath = path.resolve(__dirname, "../src/data/airports.json");
@@ -82,7 +92,10 @@ function normalizeAirport(row, countriesByCode) {
     return null;
   }
 
-  if (row.scheduled_service !== "yes") {
+  if (
+    row.scheduled_service !== "yes" ||
+    !INCLUDED_AIRPORT_TYPES.has(row.type)
+  ) {
     return null;
   }
 
@@ -133,12 +146,7 @@ async function main() {
       if (!airport) return null;
       return {
         airport,
-        rank:
-          new Map([
-            ["large_airport", 3],
-            ["medium_airport", 2],
-            ["small_airport", 1],
-          ]).get(row.type) ?? 0,
+        rank: TYPE_RANK.get(row.type) ?? 0,
       };
     })
     .filter(Boolean);

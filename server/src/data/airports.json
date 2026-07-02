@@ -1352,14 +1352,6 @@
     "lon": 148.951996
   },
   {
-    "iata": "HIS",
-    "name": "Hayman Island Resort Seaplane Base",
-    "city": "Hayman Island",
-    "country": "Australia",
-    "lat": -20.059999,
-    "lon": 148.880997
-  },
-  {
     "iata": "HVB",
     "name": "Hervey Bay Airport",
     "city": "Hervey Bay",
@@ -1960,14 +1952,6 @@
     "lon": 142.824997
   },
   {
-    "iata": "LBH",
-    "name": "Palm Beach Seaplane Base",
-    "city": "Sydney",
-    "country": "Australia",
-    "lat": -33.5871,
-    "lon": 151.3234
-  },
-  {
     "iata": "WSI",
     "name": "[Duplicate] Western Sydney International Airport",
     "city": "Sydney",
@@ -2246,14 +2230,6 @@
     "country": "Bahamas",
     "lat": 24.6294,
     "lon": -75.673797
-  },
-  {
-    "iata": "NSB",
-    "name": "Bimini North Seaplane Base",
-    "city": "Bimini",
-    "country": "Bahamas",
-    "lat": 25.767,
-    "lon": -79.25
   },
   {
     "iata": "TBI",
@@ -4256,14 +4232,6 @@
     "lon": -96.077797
   },
   {
-    "iata": "YBF",
-    "name": "Bamfield Seaplane Base",
-    "city": "Bamfield",
-    "country": "Canada",
-    "lat": 48.835967,
-    "lon": -125.137453
-  },
-  {
     "iata": "YLK",
     "name": "Barrie-Lake Simcoe Regional Airport",
     "city": "Barrie",
@@ -4278,14 +4246,6 @@
     "country": "Canada",
     "lat": 53.965599,
     "lon": -91.027199
-  },
-  {
-    "iata": "YBW",
-    "name": "Bedwell Harbour Seaplane Base",
-    "city": "Bedwell Harbour",
-    "country": "Canada",
-    "lat": 48.75,
-    "lon": -123.233002
   },
   {
     "iata": "ZEL",
@@ -4384,14 +4344,6 @@
     "lon": -101.679001
   },
   {
-    "iata": "YGN",
-    "name": "Greenway Sound Seaplane Base",
-    "city": "Broughton Island",
-    "country": "Canada",
-    "lat": 50.839,
-    "lon": -126.775
-  },
-  {
     "iata": "YPZ",
     "name": "Burns Lake Airport",
     "city": "Burns Lake",
@@ -4422,14 +4374,6 @@
     "country": "Canada",
     "lat": 49.950802,
     "lon": -125.271004
-  },
-  {
-    "iata": "YHH",
-    "name": "Campbell River Seaplane Base",
-    "city": "Campbell River",
-    "country": "Canada",
-    "lat": 50.049999,
-    "lon": -125.25
   },
   {
     "iata": "YRF",
@@ -4758,22 +4702,6 @@
     "country": "Canada",
     "lat": 45.868697,
     "lon": -66.529891
-  },
-  {
-    "iata": "SYF",
-    "name": "Silva Bay Seaplane Base",
-    "city": "Gabriola Island",
-    "country": "Canada",
-    "lat": 49.151,
-    "lon": -123.698
-  },
-  {
-    "iata": "YMF",
-    "name": "Montague Harbour Seaplane Base",
-    "city": "Galiano Island",
-    "country": "Canada",
-    "lat": 48.89225,
-    "lon": -123.39215
   },
   {
     "iata": "YRA",
@@ -5208,14 +5136,6 @@
     "lon": -59.187942
   },
   {
-    "iata": "YAQ",
-    "name": "Maple Bay Seaplane Base",
-    "city": "Maple Bay",
-    "country": "Canada",
-    "lat": 48.8167,
-    "lon": -123.6084
-  },
-  {
     "iata": "YMH",
     "name": "Mary's Harbour Airport",
     "city": "Mary's Harbour",
@@ -5238,14 +5158,6 @@
     "country": "Canada",
     "lat": 50.018902,
     "lon": -110.721001
-  },
-  {
-    "iata": "YAV",
-    "name": "Mayne Island Seaplane Base",
-    "city": "Miners Bay",
-    "country": "Canada",
-    "lat": 48.852241,
-    "lon": -123.301982
   },
   {
     "iata": "YQM",
@@ -5326,14 +5238,6 @@
     "country": "Canada",
     "lat": 49.05497,
     "lon": -123.869863
-  },
-  {
-    "iata": "ZNA",
-    "name": "Nanaimo Harbour Water Aerodrome",
-    "city": "Nanaimo",
-    "country": "Canada",
-    "lat": 49.169813,
-    "lon": -123.933845
   },
   {
     "iata": "YNA",
@@ -5568,14 +5472,6 @@
     "lon": -59.78507
   },
   {
-    "iata": "WPL",
-    "name": "Powell Lake Seaplane Base",
-    "city": "Powell River",
-    "country": "Canada",
-    "lat": 49.887335,
-    "lon": -124.53372
-  },
-  {
     "iata": "YPW",
     "name": "Powell River Airport",
     "city": "Powell River",
@@ -5800,14 +5696,6 @@
     "lon": -75.667198
   },
   {
-    "iata": "YGG",
-    "name": "Ganges Seaplane Base",
-    "city": "Salt Spring Island",
-    "country": "Canada",
-    "lat": 48.8545,
-    "lon": -123.4969
-  },
-  {
     "iata": "YZP",
     "name": "Sandspit Airport",
     "city": "Sandspit",
@@ -5846,14 +5734,6 @@
     "country": "Canada",
     "lat": 52.170723,
     "lon": -106.700793
-  },
-  {
-    "iata": "YAJ",
-    "name": "Lyall Harbour Seaplane Base",
-    "city": "Saturna Island",
-    "country": "Canada",
-    "lat": 48.795274,
-    "lon": -123.181801
   },
   {
     "iata": "YAM",
@@ -5976,28 +5856,12 @@
     "lon": -105.841003
   },
   {
-    "iata": "YIG",
-    "name": "Big Bay Seaplane Base",
-    "city": "Stuart Island",
-    "country": "Canada",
-    "lat": 50.3923,
-    "lon": -125.1372
-  },
-  {
     "iata": "YSB",
     "name": "Sudbury Airport",
     "city": "Sudbury",
     "country": "Canada",
     "lat": 46.625,
     "lon": -80.798897
-  },
-  {
-    "iata": "YTG",
-    "name": "Sullivan Bay Seaplane Base",
-    "city": "Sullivan Bay",
-    "country": "Canada",
-    "lat": 50.885359,
-    "lon": -126.831069
   },
   {
     "iata": "SUR",
@@ -6064,14 +5928,6 @@
     "lon": -101.091003
   },
   {
-    "iata": "YBQ",
-    "name": "Telegraph Harbour Seaplane Base",
-    "city": "Thetis Island",
-    "country": "Canada",
-    "lat": 48.97,
-    "lon": -123.664
-  },
-  {
     "iata": "YTH",
     "name": "Thompson Airport",
     "city": "Thompson",
@@ -6102,14 +5958,6 @@
     "country": "Canada",
     "lat": 49.079833,
     "lon": -125.775583
-  },
-  {
-    "iata": "YTP",
-    "name": "Tofino Harbour Seaplane Base",
-    "city": "Tofino",
-    "country": "Canada",
-    "lat": 49.155,
-    "lon": -125.91
   },
   {
     "iata": "YTZ",
@@ -6176,28 +6024,12 @@
     "lon": -77.782799
   },
   {
-    "iata": "CXH",
-    "name": "Vancouver Harbour Water Aerodrome",
-    "city": "Vancouver",
-    "country": "Canada",
-    "lat": 49.291265,
-    "lon": -123.11717
-  },
-  {
     "iata": "YVR",
     "name": "Vancouver International Airport",
     "city": "Vancouver",
     "country": "Canada",
     "lat": 49.193901,
     "lon": -123.183998
-  },
-  {
-    "iata": "YWH",
-    "name": "Victoria Harbour Seaplane Base",
-    "city": "Victoria",
-    "country": "Canada",
-    "lat": 48.423782,
-    "lon": -123.37198
   },
   {
     "iata": "YYJ",
@@ -6270,14 +6102,6 @@
     "country": "Canada",
     "lat": 63.131699,
     "lon": -117.246002
-  },
-  {
-    "iata": "YWS",
-    "name": "Whistler/Green Lake Water Aerodrome",
-    "city": "Whistler",
-    "country": "Canada",
-    "lat": 50.1436,
-    "lon": -122.948997
   },
   {
     "iata": "YZU",
@@ -10240,14 +10064,6 @@
     "lon": 24.472799
   },
   {
-    "iata": "CHE",
-    "name": "Tallinn Linnahall Heliport",
-    "city": "Tallinn",
-    "country": "Estonia",
-    "lat": 59.448015,
-    "lon": 24.753313
-  },
-  {
     "iata": "TLL",
     "name": "Lennart Meri Tallinn Airport",
     "city": "Tallinn",
@@ -12288,124 +12104,12 @@
     "lon": 20.8843
   },
   {
-    "iata": "AOQ",
-    "name": "Aappilattoq Heliport",
-    "city": "Aappilattoq",
-    "country": "Greenland",
-    "lat": 72.88703,
-    "lon": -55.596287
-  },
-  {
-    "iata": "QUV",
-    "name": "Aappilattoq Heliport",
-    "city": "Aappilattoq",
-    "country": "Greenland",
-    "lat": 60.148357,
-    "lon": -44.286916
-  },
-  {
     "iata": "JEG",
     "name": "Aasiaat Airport",
     "city": "Aasiaat",
     "country": "Greenland",
     "lat": 68.721802,
     "lon": -52.784698
-  },
-  {
-    "iata": "QCU",
-    "name": "Akunnaaq Heliport",
-    "city": "Akunnaaq",
-    "country": "Greenland",
-    "lat": 68.744273,
-    "lon": -52.340369
-  },
-  {
-    "iata": "LLU",
-    "name": "Alluitsup Paa Heliport",
-    "city": "Alluitsup Paa",
-    "country": "Greenland",
-    "lat": 60.46445,
-    "lon": -45.56917
-  },
-  {
-    "iata": "QUW",
-    "name": "Ammassivik Heliport",
-    "city": "Ammassivik",
-    "country": "Greenland",
-    "lat": 60.597376,
-    "lon": -45.382445
-  },
-  {
-    "iata": "QGQ",
-    "name": "Attu Heliport",
-    "city": "Attu",
-    "country": "Greenland",
-    "lat": 67.940663,
-    "lon": -53.62187
-  },
-  {
-    "iata": "QFG",
-    "name": "Eqalugaarsuit Heliport",
-    "city": "Eqalugaarsuit",
-    "country": "Greenland",
-    "lat": 60.61972,
-    "lon": -45.914062
-  },
-  {
-    "iata": "QFX",
-    "name": "Igaliku Heliport",
-    "city": "Igaliku",
-    "country": "Greenland",
-    "lat": 60.99229,
-    "lon": -45.431428
-  },
-  {
-    "iata": "QFI",
-    "name": "Iginniarfik Heliport",
-    "city": "Iginniarfik",
-    "country": "Greenland",
-    "lat": 68.14583,
-    "lon": -53.16916
-  },
-  {
-    "iata": "QJI",
-    "name": "Ikamiut Heliport",
-    "city": "Ikamiut",
-    "country": "Greenland",
-    "lat": 68.634253,
-    "lon": -51.832262
-  },
-  {
-    "iata": "IKE",
-    "name": "Ikerasak Heliport",
-    "city": "Ikerasak",
-    "country": "Greenland",
-    "lat": 70.498145,
-    "lon": -51.303084
-  },
-  {
-    "iata": "QRY",
-    "name": "Ikerassaarsuk Heliport",
-    "city": "Ikerassaarsuk",
-    "country": "Greenland",
-    "lat": 68.140881,
-    "lon": -53.441459
-  },
-  {
-    "iata": "XIQ",
-    "name": "Ilimanaq Heliport",
-    "city": "Ilimanaq",
-    "country": "Greenland",
-    "lat": 69.080915,
-    "lon": -51.114315
-  },
-  {
-    "iata": "IOT",
-    "name": "Illorsuit Heliport",
-    "city": "Illorsuit",
-    "country": "Greenland",
-    "lat": 71.241944,
-    "lon": -53.562877
   },
   {
     "iata": "JAV",
@@ -12416,68 +12120,12 @@
     "lon": -51.057098
   },
   {
-    "iata": "IUI",
-    "name": "Innarsuit Heliport",
-    "city": "Innarsuit",
-    "country": "Greenland",
-    "lat": 73.199895,
-    "lon": -56.010817
-  },
-  {
-    "iata": "IOQ",
-    "name": "Isortoq Heliport",
-    "city": "Isortoq",
-    "country": "Greenland",
-    "lat": 65.547792,
-    "lon": -38.976552
-  },
-  {
-    "iata": "OBY",
-    "name": "Ittoqqortoormiit Heliport",
-    "city": "Ittoqqortoormiit",
-    "country": "Greenland",
-    "lat": 70.488229,
-    "lon": -21.97168
-  },
-  {
-    "iata": "QPW",
-    "name": "Kangaatsiaq Heliport",
-    "city": "Kangaatsiaq",
-    "country": "Greenland",
-    "lat": 68.312657,
-    "lon": -53.460208
-  },
-  {
     "iata": "SFJ",
     "name": "Kangerlussuaq International Airport",
     "city": "Kangerlussuaq",
     "country": "Greenland",
     "lat": 67.010446,
     "lon": -50.715294
-  },
-  {
-    "iata": "KGQ",
-    "name": "Kangersuatsiaq Heliport",
-    "city": "Kangersuatsiaq",
-    "country": "Greenland",
-    "lat": 72.381092,
-    "lon": -55.536586
-  },
-  {
-    "iata": "JGR",
-    "name": "Kangilinnguit Heliport",
-    "city": "Kangilinnguit",
-    "country": "Greenland",
-    "lat": 61.22896,
-    "lon": -48.09698
-  },
-  {
-    "iata": "QJE",
-    "name": "Kitsissuarsuit Heliport",
-    "city": "Kitsissuarsuit",
-    "country": "Greenland",
-    "lat": 68.857926,
-    "lon": -53.123295
   },
   {
     "iata": "KUS",
@@ -12488,14 +12136,6 @@
     "lon": -37.1236
   },
   {
-    "iata": "KUZ",
-    "name": "Kuummiut Heliport",
-    "city": "Kuummiut",
-    "country": "Greenland",
-    "lat": 65.863935,
-    "lon": -36.997919
-  },
-  {
     "iata": "JSU",
     "name": "Maniitsoq Airport",
     "city": "Maniitsoq",
@@ -12504,60 +12144,12 @@
     "lon": -52.9394
   },
   {
-    "iata": "JNN",
-    "name": "Nanortalik Heliport",
-    "city": "Nanortalik",
-    "country": "Greenland",
-    "lat": 60.141884,
-    "lon": -45.232977
-  },
-  {
-    "iata": "JNS",
-    "name": "Narsaq Heliport",
-    "city": "Narsaq",
-    "country": "Greenland",
-    "lat": 60.917283,
-    "lon": -46.059923
-  },
-  {
-    "iata": "QFN",
-    "name": "Narsarmijit Heliport",
-    "city": "Narsarmijit",
-    "country": "Greenland",
-    "lat": 60.004694,
-    "lon": -44.656935
-  },
-  {
-    "iata": "UAK",
-    "name": "Narsarsuaq Airport",
-    "city": "Narsarsuaq",
-    "country": "Greenland",
-    "lat": 61.15958,
-    "lon": -45.42469
-  },
-  {
     "iata": "CNP",
     "name": "Neerlerit Inaat Airport",
     "city": "Neerlerit Inaat",
     "country": "Greenland",
     "lat": 70.743103,
     "lon": -22.650499
-  },
-  {
-    "iata": "NIQ",
-    "name": "Niaqornat Heliport",
-    "city": "Niaqornat",
-    "country": "Greenland",
-    "lat": 70.789385,
-    "lon": -53.662945
-  },
-  {
-    "iata": "JUU",
-    "name": "Nuugaatsiaq Heliport",
-    "city": "Nuugaatsiaq",
-    "country": "Greenland",
-    "lat": 71.538769,
-    "lon": -53.205038
   },
   {
     "iata": "GOH",
@@ -12600,124 +12192,12 @@
     "lon": -46.065001
   },
   {
-    "iata": "JCH",
-    "name": "Qasigiannguit Heliport",
-    "city": "Qasigiannguit",
-    "country": "Greenland",
-    "lat": 68.822816,
-    "lon": -51.173447
-  },
-  {
-    "iata": "QJH",
-    "name": "Qassimiut Heliport",
-    "city": "Qassimiut",
-    "country": "Greenland",
-    "lat": 60.780959,
-    "lon": -47.156249
-  },
-  {
-    "iata": "PQT",
-    "name": "Qeqertaq Heliport",
-    "city": "Qeqertaq",
-    "country": "Greenland",
-    "lat": 69.995861,
-    "lon": -51.300917
-  },
-  {
-    "iata": "JGO",
-    "name": "Qeqertarsuaq Heliport",
-    "city": "Qeqertarsuaq",
-    "country": "Greenland",
-    "lat": 69.251182,
-    "lon": -53.514876
-  },
-  {
-    "iata": "QOQ",
-    "name": "Saarloq Heliport",
-    "city": "Saarloq",
-    "country": "Greenland",
-    "lat": 60.537778,
-    "lon": -46.024722
-  },
-  {
-    "iata": "SAE",
-    "name": "Saattut Heliport",
-    "city": "Saattut",
-    "country": "Greenland",
-    "lat": 70.811172,
-    "lon": -51.63129
-  },
-  {
-    "iata": "SVR",
-    "name": "Savissivik Heliport",
-    "city": "Savissivik",
-    "country": "Greenland",
-    "lat": 76.018613,
-    "lon": -65.117683
-  },
-  {
-    "iata": "SGG",
-    "name": "Sermiligaaq Heliport",
-    "city": "Sermiligaaq",
-    "country": "Greenland",
-    "lat": 65.90592,
-    "lon": -36.378254
-  },
-  {
-    "iata": "SRK",
-    "name": "Siorapaluk Heliport",
-    "city": "Siorapaluk",
-    "country": "Greenland",
-    "lat": 77.786517,
-    "lon": -70.638657
-  },
-  {
     "iata": "JHS",
     "name": "Sisimiut Airport",
     "city": "Sisimiut",
     "country": "Greenland",
     "lat": 66.951302,
     "lon": -53.729301
-  },
-  {
-    "iata": "AGM",
-    "name": "Tasiilaq Heliport",
-    "city": "Tasiilaq",
-    "country": "Greenland",
-    "lat": 65.612296,
-    "lon": -37.618335
-  },
-  {
-    "iata": "XEQ",
-    "name": "Tasiusaq Heliport",
-    "city": "Tasiusak",
-    "country": "Greenland",
-    "lat": 60.194305,
-    "lon": -44.813447
-  },
-  {
-    "iata": "TQA",
-    "name": "Tasiusaq Heliport",
-    "city": "Tasiusaq",
-    "country": "Greenland",
-    "lat": 73.373055,
-    "lon": -56.06028
-  },
-  {
-    "iata": "TQI",
-    "name": "Tiniteqilaaq Heliport",
-    "city": "Tiniteqilaaq",
-    "country": "Greenland",
-    "lat": 65.892027,
-    "lon": -37.783409
-  },
-  {
-    "iata": "JUK",
-    "name": "Ukkusissat Heliport",
-    "city": "Ukkusissat",
-    "country": "Greenland",
-    "lat": 71.049438,
-    "lon": -51.890016
   },
   {
     "iata": "JUV",
@@ -12734,14 +12214,6 @@
     "country": "Greenland",
     "lat": 70.7342,
     "lon": -52.696201
-  },
-  {
-    "iata": "UMD",
-    "name": "Uummannaq Heliport",
-    "city": "Uummannaq",
-    "country": "Greenland",
-    "lat": 70.680428,
-    "lon": -52.11163
   },
   {
     "iata": "CRU",
@@ -13014,14 +12486,6 @@
     "country": "Honduras",
     "lat": 16.1131,
     "lon": -86.880302
-  },
-  {
-    "iata": "HHP",
-    "name": "Shun Tak Heliport",
-    "city": "Central and Western",
-    "country": "Hong Kong",
-    "lat": 22.288868,
-    "lon": 114.152369
   },
   {
     "iata": "HKG",
@@ -15856,14 +15320,6 @@
     "lon": 12.488
   },
   {
-    "iata": "TQR",
-    "name": "San Domino Island Heliport",
-    "city": "Tremiti Islands",
-    "country": "Italy",
-    "lat": 42.117775,
-    "lon": 15.490655
-  },
-  {
     "iata": "TSF",
     "name": "Treviso Airport",
     "city": "Treviso (TV)",
@@ -17752,14 +17208,6 @@
     "lon": -3.00758
   },
   {
-    "iata": "GZM",
-    "name": "Xewkija Heliport",
-    "city": "Gozo",
-    "country": "Malta",
-    "lat": 36.027199,
-    "lon": 14.2728
-  },
-  {
     "iata": "MLA",
     "name": "Malta International Airport",
     "city": "Valletta",
@@ -18494,14 +17942,6 @@
     "country": "Moldova",
     "lat": 46.92774,
     "lon": 28.931704
-  },
-  {
-    "iata": "MCM",
-    "name": "Monaco Heliport",
-    "city": "Fontvieille",
-    "country": "Monaco",
-    "lat": 43.725798,
-    "lon": 7.419673
   },
   {
     "iata": "LTI",
@@ -20302,14 +19742,6 @@
     "country": "Norway",
     "lat": 70.0653,
     "lon": 29.8447
-  },
-  {
-    "iata": "VRY",
-    "name": "Værøy Heliport",
-    "city": "Værøy",
-    "country": "Norway",
-    "lat": 67.654555,
-    "lon": 12.727257
   },
   {
     "iata": "VAW",
@@ -24416,14 +23848,6 @@
     "lon": 0.073333
   },
   {
-    "iata": "JCU",
-    "name": "Ceuta Heliport",
-    "city": "Ceuta",
-    "country": "Spain",
-    "lat": 35.892657,
-    "lon": -5.306321
-  },
-  {
     "iata": "ODB",
     "name": "Córdoba Airport",
     "city": "Córdoba",
@@ -24704,14 +24128,6 @@
     "lon": 81.677163
   },
   {
-    "iata": "BJT",
-    "name": "Bentota River Waterdrome",
-    "city": "Bentota",
-    "country": "Sri Lanka",
-    "lat": 6.431,
-    "lon": 79.996
-  },
-  {
     "iata": "CMB",
     "name": "Bandaranaike International Colombo Airport",
     "city": "Colombo",
@@ -24736,14 +24152,6 @@
     "lon": 80.320297
   },
   {
-    "iata": "HBT",
-    "name": "Hambantota Seaplane Base",
-    "city": "Hambantota",
-    "country": "Sri Lanka",
-    "lat": 6.124043,
-    "lon": 81.103
-  },
-  {
     "iata": "JAF",
     "name": "Jaffna International Airport",
     "city": "Jaffna",
@@ -24752,36 +24160,12 @@
     "lon": 80.070099
   },
   {
-    "iata": "KDZ",
-    "name": "Polgolla Reservoir Seaplane Base",
-    "city": "Kandy",
-    "country": "Sri Lanka",
-    "lat": 7.3251,
-    "lon": 80.6422
-  },
-  {
     "iata": "HRI",
     "name": "Mattala Rajapaksa International Airport",
     "city": "Mattala",
     "country": "Sri Lanka",
     "lat": 6.283878,
     "lon": 81.124163
-  },
-  {
-    "iata": "DWO",
-    "name": "Diyawanna Oya Seaplane Base",
-    "city": "Sri Jayawardenepura Kotte",
-    "country": "Sri Lanka",
-    "lat": 6.906585,
-    "lon": 79.909
-  },
-  {
-    "iata": "TTW",
-    "name": "Tissa Tank Waterdrome",
-    "city": "Tissamaharama",
-    "country": "Sri Lanka",
-    "lat": 6.2876,
-    "lon": 81.2906
   },
   {
     "iata": "TRR",
@@ -26472,28 +25856,12 @@
     "lon": 179.196976
   },
   {
-    "iata": "SPB",
-    "name": "Charlotte Amalie Harbor Seaplane Base",
-    "city": "Charlotte Amalie",
-    "country": "U.S. Virgin Islands",
-    "lat": 18.338204,
-    "lon": -64.939675
-  },
-  {
     "iata": "STT",
     "name": "Cyril E. King Airport",
     "city": "Charlotte Amalie",
     "country": "U.S. Virgin Islands",
     "lat": 18.337091,
     "lon": -64.977251
-  },
-  {
-    "iata": "SSB",
-    "name": "Christiansted Harbor Seaplane Base",
-    "city": "Christiansted",
-    "country": "U.S. Virgin Islands",
-    "lat": 17.747908,
-    "lon": -64.707928
   },
   {
     "iata": "STX",
@@ -27048,14 +26416,6 @@
     "lon": -2.900353
   },
   {
-    "iata": "PZE",
-    "name": "Penzance Heliport",
-    "city": "Penzance, Cornwall",
-    "country": "United Kingdom",
-    "lat": 50.130376,
-    "lon": -5.513946
-  },
-  {
     "iata": "PIK",
     "name": "Glasgow Prestwick Airport",
     "city": "Prestwick, South Ayrshire",
@@ -27304,14 +26664,6 @@
     "lon": -157.855339
   },
   {
-    "iata": "AOS",
-    "name": "Amook Bay Seaplane Base",
-    "city": "Amook Bay",
-    "country": "United States",
-    "lat": 57.4715,
-    "lon": -153.815002
-  },
-  {
     "iata": "OTS",
     "name": "Anacortes Airport",
     "city": "Anacortes",
@@ -27342,14 +26694,6 @@
     "country": "United States",
     "lat": 61.212792,
     "lon": -149.843988
-  },
-  {
-    "iata": "AGN",
-    "name": "Angoon Seaplane Base",
-    "city": "Angoon",
-    "country": "United States",
-    "lat": 57.497097,
-    "lon": -134.56722
   },
   {
     "iata": "ANI",
@@ -27928,14 +27272,6 @@
     "lon": -78.452904
   },
   {
-    "iata": "CYM",
-    "name": "Chatham Seaplane Base",
-    "city": "Chatham",
-    "country": "United States",
-    "lat": 57.5149,
-    "lon": -134.945999
-  },
-  {
     "iata": "CHA",
     "name": "Chattanooga Metropolitan Airport (Lovell Field)",
     "city": "Chattanooga",
@@ -28088,14 +27424,6 @@
     "lon": -109.024002
   },
   {
-    "iata": "KCC",
-    "name": "Coffman Cove Seaplane Base",
-    "city": "Coffman Cove",
-    "country": "United States",
-    "lat": 56.012586,
-    "lon": -132.835093
-  },
-  {
     "iata": "CDB",
     "name": "Cold Bay Airport",
     "city": "Cold Bay",
@@ -28208,14 +27536,6 @@
     "lon": -108.627998
   },
   {
-    "iata": "CGA",
-    "name": "Craig Seaplane Base",
-    "city": "Craig",
-    "country": "United States",
-    "lat": 55.478802,
-    "lon": -133.147995
-  },
-  {
     "iata": "CEC",
     "name": "Jack Mc Namara Field Airport",
     "city": "Crescent City",
@@ -28288,14 +27608,6 @@
     "lon": -122.813973
   },
   {
-    "iata": "DHB",
-    "name": "Deer Harbor SPB",
-    "city": "Deer Harbor",
-    "country": "United States",
-    "lat": 48.616667,
-    "lon": -123.002778
-  },
-  {
     "iata": "DRG",
     "name": "Deering Airport",
     "city": "Deering",
@@ -28366,14 +27678,6 @@
     "country": "United States",
     "lat": 59.044701,
     "lon": -158.505005
-  },
-  {
-    "iata": "DIO",
-    "name": "Diomede Heliport",
-    "city": "Diomede",
-    "country": "United States",
-    "lat": 65.758367,
-    "lon": -168.953676
   },
   {
     "iata": "DDC",
@@ -28480,14 +27784,6 @@
     "lon": -91.484299
   },
   {
-    "iata": "EDA",
-    "name": "Edna Bay Seaplane Base",
-    "city": "Edna Bay",
-    "country": "United States",
-    "lat": 55.949653,
-    "lon": -133.661012
-  },
-  {
     "iata": "EEK",
     "name": "Eek Airport",
     "city": "Eek",
@@ -28518,14 +27814,6 @@
     "country": "United States",
     "lat": 31.809908,
     "lon": -106.375607
-  },
-  {
-    "iata": "ELV",
-    "name": "Elfin Cove Seaplane Base",
-    "city": "Elfin Cove",
-    "country": "United States",
-    "lat": 58.195202,
-    "lon": -136.347
   },
   {
     "iata": "ELI",
@@ -28606,14 +27894,6 @@
     "country": "United States",
     "lat": 40.276699,
     "lon": -74.813499
-  },
-  {
-    "iata": "EXI",
-    "name": "Excursion Inlet Seaplane Base",
-    "city": "Excursion Inlet",
-    "country": "United States",
-    "lat": 58.420502,
-    "lon": -135.449005
   },
   {
     "iata": "FAI",
@@ -28768,14 +28048,6 @@
     "lon": -119.718018
   },
   {
-    "iata": "FBS",
-    "name": "Friday Harbor Seaplane Base",
-    "city": "Friday Harbor",
-    "country": "United States",
-    "lat": 48.5373,
-    "lon": -123.010002
-  },
-  {
     "iata": "FRD",
     "name": "Friday Harbor Airport",
     "city": "Friday Harbor",
@@ -28790,14 +28062,6 @@
     "country": "United States",
     "lat": 48.673379,
     "lon": -123.175439
-  },
-  {
-    "iata": "FNR",
-    "name": "Funter Bay Seaplane Base",
-    "city": "Funter Bay",
-    "country": "United States",
-    "lat": 58.254398,
-    "lon": -134.897995
   },
   {
     "iata": "GNV",
@@ -29168,14 +28432,6 @@
     "lon": -103.217003
   },
   {
-    "iata": "HYL",
-    "name": "Hollis Clark Bay Seaplane Base",
-    "city": "Hollis",
-    "country": "United States",
-    "lat": 55.481529,
-    "lon": -132.646008
-  },
-  {
     "iata": "HCR",
     "name": "Holy Cross Airport",
     "city": "Holy Cross",
@@ -29278,22 +28534,6 @@
     "country": "United States",
     "lat": 41.6693,
     "lon": -70.280403
-  },
-  {
-    "iata": "HYG",
-    "name": "Hydaburg Seaplane Base",
-    "city": "Hydaburg",
-    "country": "United States",
-    "lat": 55.205227,
-    "lon": -132.830286
-  },
-  {
-    "iata": "WHD",
-    "name": "Hyder Seaplane Base",
-    "city": "Hyder",
-    "country": "United States",
-    "lat": 55.903324,
-    "lon": -130.009975
   },
   {
     "iata": "IDA",
@@ -29456,14 +28696,6 @@
     "lon": -156.045603
   },
   {
-    "iata": "KAE",
-    "name": "Kake Seaplane Base",
-    "city": "Kake",
-    "country": "United States",
-    "lat": 56.973,
-    "lon": -133.945999
-  },
-  {
     "iata": "AZO",
     "name": "Kalamazoo/Battle Creek International Airport",
     "city": "Kalamazoo",
@@ -29520,28 +28752,12 @@
     "lon": -154.453762
   },
   {
-    "iata": "KXA",
-    "name": "Kasaan Seaplane Base",
-    "city": "Kasaan",
-    "country": "United States",
-    "lat": 55.537399,
-    "lon": -132.397995
-  },
-  {
     "iata": "KUK",
     "name": "Kasigluk Airport",
     "city": "Kasigluk",
     "country": "United States",
     "lat": 60.872747,
     "lon": -162.5247
-  },
-  {
-    "iata": "BKF",
-    "name": "Lake Brooks Seaplane Base",
-    "city": "Katmai National Park",
-    "country": "United States",
-    "lat": 58.554798,
-    "lon": -155.776993
   },
   {
     "iata": "MKK",
@@ -29568,28 +28784,12 @@
     "lon": -151.245174
   },
   {
-    "iata": "KEH",
-    "name": "Kenmore Air Harbor LLC Seaplane Base",
-    "city": "Kenmore",
-    "country": "United States",
-    "lat": 47.754799,
-    "lon": -122.259003
-  },
-  {
     "iata": "KTN",
     "name": "Ketchikan International Airport",
     "city": "Ketchikan",
     "country": "United States",
     "lat": 55.355598,
     "lon": -131.714004
-  },
-  {
-    "iata": "WFB",
-    "name": "Ketchikan Harbor Seaplane Base",
-    "city": "Ketchikan",
-    "country": "United States",
-    "lat": 55.349899,
-    "lon": -131.677002
   },
   {
     "iata": "EYW",
@@ -29654,14 +28854,6 @@
     "country": "United States",
     "lat": 40.093498,
     "lon": -92.544899
-  },
-  {
-    "iata": "KKB",
-    "name": "Kitoi Bay Seaplane Base",
-    "city": "Kitoi Bay",
-    "country": "United States",
-    "lat": 58.190899,
-    "lon": -152.369995
   },
   {
     "iata": "KVL",
@@ -29902,14 +29094,6 @@
     "country": "United States",
     "lat": 34.567699,
     "lon": -98.416603
-  },
-  {
-    "iata": "ALZ",
-    "name": "Alitak Seaplane Base",
-    "city": "Lazy Bay",
-    "country": "United States",
-    "lat": 56.897294,
-    "lon": -154.249692
   },
   {
     "iata": "LEB",
@@ -30240,14 +29424,6 @@
     "lon": -111.654999
   },
   {
-    "iata": "MTM",
-    "name": "Metlakatla Seaplane Base",
-    "city": "Metlakatla",
-    "country": "United States",
-    "lat": 55.131001,
-    "lon": -131.578003
-  },
-  {
     "iata": "MIA",
     "name": "Miami International Airport",
     "city": "Miami",
@@ -30416,14 +29592,6 @@
     "lon": -89.337097
   },
   {
-    "iata": "KMY",
-    "name": "Moser Bay Seaplane Base",
-    "city": "Moser Bay",
-    "country": "United States",
-    "lat": 57.0256,
-    "lon": -154.145996
-  },
-  {
     "iata": "CWA",
     "name": "Central Wisconsin Airport",
     "city": "Mosinee",
@@ -30560,36 +29728,12 @@
     "lon": -73.779317
   },
   {
-    "iata": "JRA",
-    "name": "West 30th Street Heliport",
-    "city": "New York",
-    "country": "United States",
-    "lat": 40.755107,
-    "lon": -74.006896
-  },
-  {
     "iata": "LGA",
     "name": "LaGuardia Airport",
     "city": "New York",
     "country": "United States",
     "lat": 40.777199,
     "lon": -73.872597
-  },
-  {
-    "iata": "NYS",
-    "name": "New York Skyports Inc Seaplane Base",
-    "city": "New York",
-    "country": "United States",
-    "lat": 40.735061,
-    "lon": -73.972814
-  },
-  {
-    "iata": "TSS",
-    "name": "East 34th Street Heliport",
-    "city": "New York",
-    "country": "United States",
-    "lat": 40.742372,
-    "lon": -73.972074
   },
   {
     "iata": "EWR",
@@ -30792,14 +29936,6 @@
     "lon": -153.270004
   },
   {
-    "iata": "KOY",
-    "name": "Olga Bay Seaplane Base",
-    "city": "Olga Bay",
-    "country": "United States",
-    "lat": 57.161499,
-    "lon": -154.229996
-  },
-  {
     "iata": "OLM",
     "name": "Olympia Regional Airport",
     "city": "Olympia",
@@ -30910,14 +30046,6 @@
     "country": "United States",
     "lat": 59.796925,
     "lon": -154.129994
-  },
-  {
-    "iata": "PEC",
-    "name": "Pelican Seaplane Base",
-    "city": "Pelican",
-    "country": "United States",
-    "lat": 57.9552,
-    "lon": -136.235992
   },
   {
     "iata": "PLN",
@@ -31048,14 +30176,6 @@
     "lon": -112.596001
   },
   {
-    "iata": "KPB",
-    "name": "Point Baker Seaplane Base",
-    "city": "Point Baker",
-    "country": "United States",
-    "lat": 56.351898,
-    "lon": -133.623001
-  },
-  {
     "iata": "PHO",
     "name": "Point Hope Airport",
     "city": "Point Hope",
@@ -31072,28 +30192,12 @@
     "lon": -163.005005
   },
   {
-    "iata": "PTD",
-    "name": "Port Alexander Seaplane Base",
-    "city": "Port Alexander",
-    "country": "United States",
-    "lat": 56.246799,
-    "lon": -134.647995
-  },
-  {
     "iata": "PTA",
     "name": "Port Alsworth Airport",
     "city": "Port Alsworth",
     "country": "United States",
     "lat": 60.201681,
     "lon": -154.325863
-  },
-  {
-    "iata": "KPY",
-    "name": "Port Bailey Seaplane Base",
-    "city": "Port Bailey",
-    "country": "United States",
-    "lat": 57.931257,
-    "lon": -153.040838
   },
   {
     "iata": "PGM",
@@ -31118,22 +30222,6 @@
     "country": "United States",
     "lat": 57.884905,
     "lon": -152.847719
-  },
-  {
-    "iata": "PPV",
-    "name": "Port Protection Seaplane Base",
-    "city": "Port Protection",
-    "country": "United States",
-    "lat": 56.3288,
-    "lon": -133.610001
-  },
-  {
-    "iata": "KPR",
-    "name": "Port Williams Seaplane Base",
-    "city": "Port Williams",
-    "country": "United States",
-    "lat": 58.490101,
-    "lon": -152.582001
   },
   {
     "iata": "PDX",
@@ -31368,14 +30456,6 @@
     "lon": -69.099197
   },
   {
-    "iata": "RSJ",
-    "name": "Rosario Seaplane Base",
-    "city": "Rosario",
-    "country": "United States",
-    "lat": 48.645699,
-    "lon": -122.867996
-  },
-  {
     "iata": "ROW",
     "name": "Roswell Air Center Airport",
     "city": "Roswell",
@@ -31520,14 +30600,6 @@
     "lon": -121.929188
   },
   {
-    "iata": "UGI",
-    "name": "San Juan /Uganik/ Seaplane Base",
-    "city": "San Juan",
-    "country": "United States",
-    "lat": 57.7304,
-    "lon": -153.320999
-  },
-  {
     "iata": "SBP",
     "name": "San Luis County Regional Airport",
     "city": "San Luis Obispo",
@@ -31640,28 +30712,12 @@
     "lon": -103.596001
   },
   {
-    "iata": "SYB",
-    "name": "Seal Bay Seaplane Base",
-    "city": "Seal Bay",
-    "country": "United States",
-    "lat": 58.373291,
-    "lon": -152.201797
-  },
-  {
     "iata": "BFI",
     "name": "King County International Airport - Boeing Field",
     "city": "Seattle",
     "country": "United States",
     "lat": 47.527042,
     "lon": -122.29995
-  },
-  {
-    "iata": "LKE",
-    "name": "Kenmore Air Harbor Seaplane Base",
-    "city": "Seattle",
-    "country": "United States",
-    "lat": 47.629002,
-    "lon": -122.338997
   },
   {
     "iata": "SEA",
@@ -32016,14 +31072,6 @@
     "lon": -107.907997
   },
   {
-    "iata": "TKE",
-    "name": "Tenakee Seaplane Base",
-    "city": "Tenakee Springs",
-    "country": "United States",
-    "lat": 57.779701,
-    "lon": -135.218002
-  },
-  {
     "iata": "TEB",
     "name": "Teterboro Airport",
     "city": "Teterboro",
@@ -32046,14 +31094,6 @@
     "country": "United States",
     "lat": 48.065701,
     "lon": -96.184998
-  },
-  {
-    "iata": "KTB",
-    "name": "Thorne Bay Seaplane Base",
-    "city": "Thorne Bay",
-    "country": "United States",
-    "lat": 55.682762,
-    "lon": -132.532883
   },
   {
     "iata": "TNC",
@@ -32158,14 +31198,6 @@
     "country": "United States",
     "lat": 34.268101,
     "lon": -88.769897
-  },
-  {
-    "iata": "NKI",
-    "name": "Naukati Bay Seaplane Base",
-    "city": "Tuxekan Island",
-    "country": "United States",
-    "lat": 55.849602,
-    "lon": -133.227994
   },
   {
     "iata": "TWF",
@@ -32369,27 +31401,11 @@
   },
   {
     "iata": "PBI",
-    "name": "Palm Beach International Airport",
+    "name": "President Donald J. Trump International Airport",
     "city": "West Palm Beach",
     "country": "United States",
     "lat": 26.683201,
     "lon": -80.095596
-  },
-  {
-    "iata": "KWP",
-    "name": "West Point Village Seaplane Base",
-    "city": "West Point",
-    "country": "United States",
-    "lat": 57.7701,
-    "lon": -153.548996
-  },
-  {
-    "iata": "WSX",
-    "name": "Westsound/WSX Seaplane Base",
-    "city": "West Sound",
-    "country": "United States",
-    "lat": 48.617901,
-    "lon": -122.956903
   },
   {
     "iata": "WYS",
@@ -32414,14 +31430,6 @@
     "country": "United States",
     "lat": 38.263802,
     "lon": -78.8964
-  },
-  {
-    "iata": "WWP",
-    "name": "Whale Pass Seaplane Float Harbor Facility",
-    "city": "Whale Pass",
-    "country": "United States",
-    "lat": 56.116299,
-    "lon": -133.121994
   },
   {
     "iata": "WMO",
@@ -32550,14 +31558,6 @@
     "country": "United States",
     "lat": 32.650938,
     "lon": -114.609375
-  },
-  {
-    "iata": "KZB",
-    "name": "Zachar Bay Seaplane Base",
-    "city": "Zachar Bay",
-    "country": "United States",
-    "lat": 57.553001,
-    "lon": -153.746052
   },
   {
     "iata": "AWK",
